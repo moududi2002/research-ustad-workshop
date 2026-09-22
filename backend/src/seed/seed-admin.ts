@@ -12,7 +12,7 @@ import 'reflect-metadata';
 import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import * as dotenv from 'dotenv';
-import { Admin } from '../auth/admin.entity';
+import { Admin } from '../../auth/admin.entity';
 
 dotenv.config();
 
