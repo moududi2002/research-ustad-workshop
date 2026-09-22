@@ -1,4 +1,5 @@
-//backend/src/registrations/registrations.service.ts
+// path: backend/src/registrations/registrations.service.ts
+
 import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -66,6 +67,18 @@ export class RegistrationsService {
 
     Object.assign(registration, dto);
     return this.registrationRepo.save(registration);
+  }
+
+  async remove(id: string): Promise<void> {
+    const registration = await this.registrationRepo.findOne({
+      where: { id },
+    });
+
+    if (!registration) {
+      throw new NotFoundException('Registration not found.');
+    }
+
+    await this.registrationRepo.remove(registration);
   }
 
   async getStats() {

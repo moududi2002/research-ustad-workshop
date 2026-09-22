@@ -1,10 +1,21 @@
-//backend/src/admin/admin.controller.ts
-import { Controller, Get, Post, Query, Body, Res } from '@nestjs/common';
+// path: backend/src/admin/admin.controller.ts
+
+import {
+  Controller,
+  Get,
+  Post,
+  Query,
+  Body,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { Response } from 'express';
 import { AdminService } from './admin.service';
 import { RegistrationsService } from '../registrations/registrations.service';
+import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 
 @Controller('admin')
+@UseGuards(JwtAuthGuard) // 🔒 Protect ALL admin routes with JWT
 export class AdminController {
   constructor(
     private readonly adminService: AdminService,
