@@ -1,4 +1,4 @@
-// path: backend/src/seed/seed-admin.ts
+// backend/src/seed/seed-admin.ts
 
 /**
  * Seed script to create the first admin account.

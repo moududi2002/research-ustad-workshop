@@ -1,4 +1,4 @@
-// path: backend/src/app.module.ts
+//backend/src/app.module.ts
 
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';

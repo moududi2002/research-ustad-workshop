@@ -1,4 +1,4 @@
-// path: backend/src/registrations/registrations.controller.ts
+//backend/src/registrations/registrations.controller.ts
 
 import {
   Controller,

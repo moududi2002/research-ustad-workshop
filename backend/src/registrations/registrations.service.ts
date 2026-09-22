@@ -1,4 +1,4 @@
-// path: backend/src/registrations/registrations.service.ts
+//backend/src/registrations/registrations.service.ts
 
 import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
