@@ -1,4 +1,4 @@
-// path: frontend/src/lib/adminApi.ts
+//frontend/src/lib/adminApi.ts
 
 import axios from 'axios';
 
@@ -56,6 +56,32 @@ export async function getCurrentAdmin(): Promise<{ admin: AdminInfo }> {
 
 export async function getAdminStats() {
   const response = await adminApi.get('/admin/stats');
+  return response.data;
+}
+
+export interface Registration {
+  id: string;
+  registrationId: string;
+  fullName: string;
+  email: string;
+  whatsapp: string;
+  academicStatus: string;
+  universityName: string;
+  department: string;
+  researchLevel: string;
+  higherStudyInterest: string;
+  preferredCountry: string | null;
+  registrationSource: string;
+  consent: boolean;
+  attendanceStatus: string;
+  certificateIssued: boolean;
+  feedbackSubmitted: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export async function getRegistrations(): Promise<Registration[]> {
+  const response = await adminApi.get('/registrations');
   return response.data;
 }
 

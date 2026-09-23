@@ -21,6 +21,7 @@ import { HiOutlineChartBar } from 'react-icons/hi2';
 import toast from 'react-hot-toast';
 import {
   getAdminStats,
+  getRegistrations,
   exportRegistrations,
   adminLogout,
   sendWorkshopReminder,
@@ -56,17 +57,20 @@ function AdminDashboard() {
   const [stats, setStats] = useState<Stats>(emptyStats);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [participants] = useState<any[]>([]);
+  const [participants, setParticipants] = useState<any[]>([]);
 
   useEffect(() => {
-    getAdminStats()
-      .then((data) => setStats(data))
-      .catch((err) => {
-        toast.error('Failed to load statistics.');
-        console.error(err);
-      })
-      .finally(() => setLoading(false));
-  }, []);
+  Promise.all([getAdminStats(), getRegistrations()])
+    .then(([statsData, registrationsData]) => {
+      setStats(statsData);
+      setParticipants(registrationsData);
+    })
+    .catch((err) => {
+      toast.error('Failed to load dashboard data.');
+      console.error(err);
+    })
+    .finally(() => setLoading(false));
+}, []);
 
   const handleExport = async (format: 'csv' | 'excel') => {
     try {
@@ -114,11 +118,12 @@ function AdminDashboard() {
   };
 
   const filteredParticipants = participants.filter(
-    (p: any) =>
-      p.name?.toLowerCase().includes(search.toLowerCase()) ||
-      p.email?.toLowerCase().includes(search.toLowerCase()) ||
-      p.university?.toLowerCase().includes(search.toLowerCase())
-  );
+  (p: any) =>
+    p.fullName?.toLowerCase().includes(search.toLowerCase()) ||
+    p.email?.toLowerCase().includes(search.toLowerCase()) ||
+    p.universityName?.toLowerCase().includes(search.toLowerCase()) ||
+    p.registrationId?.toLowerCase().includes(search.toLowerCase())
+);
 
   return (
     <>
