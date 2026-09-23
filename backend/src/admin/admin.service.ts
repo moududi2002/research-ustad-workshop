@@ -5,7 +5,7 @@ import { Repository } from 'typeorm';
 import { Registration } from '../registrations/registration.entity';
 import * as ExcelJS from 'exceljs';
 import { createObjectCsvStringifier } from 'csv-writer';
-import * as nodemailer from 'nodemailer';
+
 
 @Injectable()
 export class AdminService {

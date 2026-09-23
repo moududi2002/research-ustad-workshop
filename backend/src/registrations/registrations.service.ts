@@ -6,6 +6,7 @@ import { Repository } from 'typeorm';
 import { Registration } from './registration.entity';
 import { CreateRegistrationDto } from './dto/create-registration.dto';
 import { UpdateRegistrationDto } from './dto/update-registration.dto';
+import * as nodemailer from 'nodemailer';
 
 
 @Injectable()
