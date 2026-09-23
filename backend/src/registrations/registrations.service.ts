@@ -7,6 +7,7 @@ import { Registration } from './registration.entity';
 import { CreateRegistrationDto } from './dto/create-registration.dto';
 import { UpdateRegistrationDto } from './dto/update-registration.dto';
 
+
 @Injectable()
 export class RegistrationsService {
   constructor(
@@ -15,24 +16,36 @@ export class RegistrationsService {
   ) {}
 
   async create(dto: CreateRegistrationDto): Promise<Registration> {
-    const existing = await this.registrationRepo.findOne({
-      where: { email: dto.email },
-    });
+  const existing = await this.registrationRepo.findOne({
+    where: { email: dto.email },
+  });
 
-    if (existing) {
-      throw new ConflictException(
-        'This email is already registered for the workshop.'
-      );
-    }
+  if (existing) {
+    throw new ConflictException(
+      'This email is already registered for the workshop.'
+    );
+  }
 
-    const registrationId = await this.generateRegistrationId();
+  const registrationId = await this.generateRegistrationId();
 
-    const registration = this.registrationRepo.create({
-      ...dto,
-      registrationId,
-    });
+  const registration = this.registrationRepo.create({
+    ...dto,
+    registrationId,
+  });
 
-    return this.registrationRepo.save(registration);
+  const savedRegistration = await this.registrationRepo.save(registration);
+
+  // Send confirmation email after successful registration
+  try {
+    await this.sendRegistrationConfirmationEmail(savedRegistration);
+  } catch (error) {
+    console.error(
+      `Failed to send confirmation email to ${savedRegistration.email}:`,
+      error
+    );
+  }
+
+  return savedRegistration;
   }
 
   async findByRegistrationId(registrationId: string): Promise<Registration> {
@@ -79,6 +92,87 @@ export class RegistrationsService {
     }
 
     await this.registrationRepo.remove(registration);
+  }
+
+  private async sendRegistrationConfirmationEmail(
+  registration: Registration
+): Promise<void> {
+  const transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT) || 587,
+    secure: false,
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+  });
+
+  const workshopDate = '26 September 2026';
+
+  await transporter.sendMail({
+    from: `"Research Ustad" <${process.env.SMTP_USER}>`,
+    to: registration.email,
+    subject: 'Registration Confirmed — Research Ustad Grand Opening Workshop',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; color: #333;">
+
+        <h2 style="color: #1f47f5; margin-bottom: 20px;">
+          Registration Confirmed
+        </h2>
+
+        <p>Dear ${registration.fullName},</p>
+
+        <p>
+          Thank you for registering for the
+          <strong>Research Ustad Grand Opening Workshop</strong>.
+        </p>
+
+        <p>Your registration has been successfully confirmed.</p>
+
+        <div style="
+          background: #f7f8fc;
+          border: 1px solid #e5e7eb;
+          border-radius: 10px;
+          padding: 20px;
+          margin: 25px 0;
+        ">
+          <p style="margin: 8px 0;">
+            <strong>Registration ID:</strong>
+            ${registration.registrationId}
+          </p>
+
+          <p style="margin: 8px 0;">
+            <strong>Participant Name:</strong>
+            ${registration.fullName}
+          </p>
+
+          <p style="margin: 8px 0;">
+            <strong>Email:</strong>
+            ${registration.email}
+          </p>
+
+          <p style="margin: 8px 0;">
+            <strong>Workshop Date:</strong>
+            ${workshopDate}
+          </p>
+        </div>
+
+        <p>
+          Please keep your Registration ID for future reference.
+        </p>
+
+        <p>
+          We look forward to seeing you at the workshop.
+        </p>
+
+        <p style="margin-top: 30px;">
+          Regards,<br />
+          <strong>Team Research Ustad</strong>
+        </p>
+
+      </div>
+    `,
+  });
   }
 
   async getStats() {

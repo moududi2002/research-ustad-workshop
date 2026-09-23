@@ -17,14 +17,36 @@ import {
 } from 'react-icons/fi';
 import { HiOutlineAcademicCap } from 'react-icons/hi2';
 
+import { getRegistration } from '@/lib/api';
+import type { RegistrationResponse } from '@/types';
+
 function SuccessContent() {
   const searchParams = useSearchParams();
-  const registrationId = searchParams.get('id') || 'N/A';
+  const registrationId = searchParams.get('id') || '';
   const [mounted, setMounted] = useState(false);
+  const [registration, setRegistration] =
+    useState<RegistrationResponse | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
+  setMounted(true);
+
+  if (!registrationId) {
+    setLoading(false);
+    return;
+  }
+
+  getRegistration(registrationId)
+    .then((data) => {
+      setRegistration(data);
+    })
+    .catch((error) => {
+      console.error('Failed to load registration:', error);
+    })
+    .finally(() => {
+      setLoading(false);
+    });
+  }, [registrationId]);
 
   const workshopDate = '26 September 2026';
 
@@ -69,17 +91,21 @@ function SuccessContent() {
                 <DetailRow
                   icon={<FiHash className="h-4 w-4" />}
                   label="Registration ID"
-                  value={mounted ? registrationId : '...'}
+                  value={
+                    loading
+                      ? '...'
+                      : registration?.registrationId || registrationId || 'N/A'
+                  }
                 />
                 <DetailRow
                   icon={<FiUser className="h-4 w-4" />}
                   label="Participant Name"
-                  value="Registered Participant"
+                  value={loading ? 'Loading...' : registration?.fullName || 'N/A'}
                 />
                 <DetailRow
                   icon={<FiMail className="h-4 w-4" />}
                   label="Registered Email"
-                  value="Check your inbox"
+                  value={loading ? 'Loading...' : registration?.email || 'N/A'}
                 />
                 <DetailRow
                   icon={<FiCalendar className="h-4 w-4" />}
