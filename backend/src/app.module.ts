@@ -5,9 +5,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RegistrationsModule } from './registrations/registrations.module';
 import { AdminModule } from './admin/admin.module';
-import { AuthModule } from '../auth/auth.module';
+import { AuthModule } from './auth/auth.module';
 import { Registration } from './registrations/registration.entity';
-import { Admin } from '../auth/admin.entity';
+import { Admin } from './auth/admin.entity';
 
 @Module({
   imports: [

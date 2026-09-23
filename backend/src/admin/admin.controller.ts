@@ -12,7 +12,7 @@ import {
 import { Response } from 'express';
 import { AdminService } from './admin.service';
 import { RegistrationsService } from '../registrations/registrations.service';
-import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('admin')
 @UseGuards(JwtAuthGuard) // 🔒 Protect ALL admin routes with JWT
