@@ -58,6 +58,9 @@ function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [participants, setParticipants] = useState<any[]>([]);
+  const [showFilters, setShowFilters] = useState(false);
+  const [levelFilter, setLevelFilter] = useState('all');
+  const [higherStudyFilter, setHigherStudyFilter] = useState('all');
 
   useEffect(() => {
   Promise.all([getAdminStats(), getRegistrations()])
@@ -117,13 +120,33 @@ function AdminDashboard() {
     }
   };
 
-  const filteredParticipants = participants.filter(
-  (p: any) =>
-    p.fullName?.toLowerCase().includes(search.toLowerCase()) ||
-    p.email?.toLowerCase().includes(search.toLowerCase()) ||
-    p.universityName?.toLowerCase().includes(search.toLowerCase()) ||
-    p.registrationId?.toLowerCase().includes(search.toLowerCase())
-);
+  const filteredParticipants = participants.filter((p: any) => {
+  const searchTerm = search.toLowerCase().trim();
+
+  const matchesSearch =
+    !searchTerm ||
+    p.fullName?.toLowerCase().includes(searchTerm) ||
+    p.email?.toLowerCase().includes(searchTerm) ||
+    p.universityName?.toLowerCase().includes(searchTerm) ||
+    p.registrationId?.toLowerCase().includes(searchTerm);
+
+  const matchesLevel =
+    levelFilter === 'all' || p.researchLevel === levelFilter;
+
+  const matchesHigherStudy =
+    higherStudyFilter === 'all' ||
+    p.higherStudyInterest === higherStudyFilter;
+
+  return matchesSearch && matchesLevel && matchesHigherStudy;
+  });
+
+  const researchLevels = Array.from(
+  new Set(
+    participants
+      .map((p: any) => p.researchLevel)
+      .filter(Boolean)
+  )
+  );
 
   return (
     <>
@@ -279,23 +302,88 @@ function AdminDashboard() {
                       Search, filter, and manage all registrations.
                     </p>
                   </div>
-                  <div className="flex gap-3">
-                    <div className="relative">
-                      <FiSearch className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
-                      <input
-                        type="text"
-                        placeholder="Search participants..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="input-field !py-2.5 !pl-9 !text-sm"
-                      />
-                    </div>
-                    <button className="btn-secondary !py-2.5 !text-sm">
-                      <FiFilter className="h-4 w-4" />
-                      Filter
-                    </button>
+                  <div className="relative flex gap-3">
+                  <div className="relative">
+                    <FiSearch className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
+
+                    <input
+                      type="text"
+                      placeholder="Search participants..."
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      className="input-field !py-2.5 !pl-9 !text-sm"
+                    />
                   </div>
-                </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowFilters((value) => !value)}
+                    className="btn-secondary !py-2.5 !text-sm"
+                  >
+                    <FiFilter className="h-4 w-4" />
+                    Filter
+                  </button>
+
+                    {showFilters && (
+                    <div className="absolute right-0 top-12 z-20 w-72 rounded-xl border border-ink-100 bg-white p-4 shadow-card">
+                      <div className="space-y-4">
+
+                        {/* Research Level */}
+                        <div>
+                          <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-ink-500">
+                            Research Level
+                          </label>
+
+                          <select
+                            value={levelFilter}
+                            onChange={(e) => setLevelFilter(e.target.value)}
+                            className="input-field w-full !py-2.5 !text-sm"
+                          >
+                            <option value="all">All levels</option>
+
+                            {researchLevels.map((level) => (
+                              <option key={level} value={level}>
+                                {level}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Higher Study */}
+                        <div>
+                          <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-ink-500">
+                            Higher Study
+                          </label>
+
+                          <select
+                            value={higherStudyFilter}
+                            onChange={(e) => setHigherStudyFilter(e.target.value)}
+                            className="input-field w-full !py-2.5 !text-sm"
+                          >
+                            <option value="all">All</option>
+                            <option value="Yes">Interested</option>
+                            <option value="No">Not interested</option>
+                          </select>
+                        </div>
+
+                        {/* Clear */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setLevelFilter('all');
+                            setHigherStudyFilter('all');
+                            setShowFilters(false);
+                          }}
+                          className="w-full rounded-lg border border-ink-200 px-3 py-2 text-sm font-semibold text-ink-700 transition-colors hover:bg-ink-50"
+                        >
+                          Clear Filters
+                        </button>
+
+                        </div>
+                      </div>
+                      )}
+                    </div>
+                  </div>
 
                 <div className="overflow-x-auto">
                   <table className="w-full">
