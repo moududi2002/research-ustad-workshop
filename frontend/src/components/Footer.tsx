@@ -2,6 +2,10 @@
 import Link from 'next/link';
 import { HiOutlineAcademicCap } from 'react-icons/hi2';
 import { FiFacebook, FiLinkedin, FiMail, FiGlobe } from 'react-icons/fi';
+import { FaFacebook , FaLinkedin } from "react-icons/fa6";
+import Image from 'next/image';
+
+
 
 export default function Footer() {
   return (
@@ -10,8 +14,13 @@ export default function Footer() {
         <div className="grid gap-10 md:grid-cols-4">
           <div className="md:col-span-2">
             <Link href="/" className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-600 text-white">
-                <HiOutlineAcademicCap className="h-5 w-5" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg ">
+                <Image
+                  src="/images/RU_logo.png"
+                  alt="logo"
+                  width={80}
+                  height={80}
+                />
               </div>
               <span className="font-display text-lg font-bold text-ink-950">
                 Research Ustad
@@ -24,21 +33,21 @@ export default function Footer() {
             </p>
             <div className="mt-6 flex gap-3">
               <a
-                href="#"
+                href="https://www.facebook.com/ResearchUstad/"
                 aria-label="Facebook"
                 className="flex h-9 w-9 items-center justify-center rounded-lg border border-ink-200 text-ink-600 transition-colors hover:border-primary-300 hover:bg-primary-50 hover:text-primary-600"
               >
-                <FiFacebook className="h-4 w-4" />
+                <FaFacebook className="h-4 w-4" />
               </a>
               <a
-                href="#"
+                href="https://www.linkedin.com/company/researchustad"
                 aria-label="LinkedIn"
                 className="flex h-9 w-9 items-center justify-center rounded-lg border border-ink-200 text-ink-600 transition-colors hover:border-primary-300 hover:bg-primary-50 hover:text-primary-600"
               >
-                <FiLinkedin className="h-4 w-4" />
+                <FaLinkedin className="h-4 w-4" />
               </a>
               <a
-                href="#"
+                href="https://www.researchustad.org"
                 aria-label="Website"
                 className="flex h-9 w-9 items-center justify-center rounded-lg border border-ink-200 text-ink-600 transition-colors hover:border-primary-300 hover:bg-primary-50 hover:text-primary-600"
               >
@@ -83,9 +92,9 @@ export default function Footer() {
               Contact
             </h3>
             <ul className="mt-4 space-y-2.5 text-sm text-ink-500">
-              <li>workshop.researchustad.org</li>
+              
               <li>info@researchustad.org</li>
-              <li>26 September 2026</li>
+             
             </ul>
           </div>
         </div>
@@ -95,7 +104,7 @@ export default function Footer() {
             &copy; {new Date().getFullYear()} Research Ustad. All rights reserved.
           </p>
           <p className="text-sm text-ink-500">
-            Made with ❤️ for researchers
+          <a href='https://researchustad.org' target='_blank'>Developed By RU IT Team</a>
           </p>
         </div>
       </div>

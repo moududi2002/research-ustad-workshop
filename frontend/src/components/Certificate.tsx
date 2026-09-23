@@ -1,6 +1,8 @@
 //frontend/src/components/Certificate.tsx
 import { FiAward, FiCheckCircle } from 'react-icons/fi';
 import { HiOutlineDocumentCheck } from 'react-icons/hi2';
+import Image from 'next/image';
+
 
 const eligibility = [
   'Attend the required portion of the workshop',
@@ -47,8 +49,13 @@ export default function Certificate() {
             <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white p-8 shadow-card">
               <div className="flex items-center justify-between border-b border-ink-100 pb-4">
                 <div className="flex items-center gap-2">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-600 text-white">
-                    <FiAward className="h-5 w-5" />
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg  text-white">
+                    <Image
+                    src="/images/RU_logo.png"
+                    alt="logo"
+                    width={80}
+                    height={80}
+                  />
                   </div>
                   <div>
                     <p className="font-display text-sm font-bold text-ink-950">

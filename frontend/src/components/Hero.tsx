@@ -8,6 +8,8 @@ import {
   FiCheckCircle,
 } from 'react-icons/fi';
 import { HiOutlineAcademicCap, HiOutlineSparkles } from 'react-icons/hi2';
+import Image from 'next/image';
+
 
 export default function Hero() {
   return (
@@ -90,8 +92,13 @@ export default function Hero() {
               <div className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-primary-500/20 to-accent-500/20 blur-2xl" />
               <div className="relative overflow-hidden rounded-3xl border border-ink-100 bg-white p-8 shadow-card">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-600 text-white">
-                    <HiOutlineAcademicCap className="h-6 w-6" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl">
+                    <Image
+                  src="/images/RU_logo.png"
+                  alt="logo"
+                  width={100}
+                  height={100}
+                />
                   </div>
                   <div>
                     <p className="font-display text-sm font-bold text-ink-950">

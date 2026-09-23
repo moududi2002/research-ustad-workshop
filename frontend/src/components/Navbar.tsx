@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { FiMenu, FiX } from 'react-icons/fi';
 import { HiOutlineAcademicCap } from 'react-icons/hi2';
+import Image from 'next/image';
+
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -34,8 +36,13 @@ export default function Navbar() {
     >
       <nav className="container-custom flex h-16 items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-600 text-white">
-            <HiOutlineAcademicCap className="h-5 w-5" />
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg">
+            <Image
+                  src="/images/RU_logo.png"
+                  alt="logo"
+                  width={100}
+                  height={100}
+                />
           </div>
           <span className="font-display text-lg font-bold text-ink-950">
             Research Ustad

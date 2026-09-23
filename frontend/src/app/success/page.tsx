@@ -19,6 +19,8 @@ import { HiOutlineAcademicCap } from 'react-icons/hi2';
 
 import { getRegistration } from '@/lib/api';
 import type { RegistrationResponse } from '@/types';
+import { SiGmail } from "react-icons/si";
+
 
 function SuccessContent() {
   const searchParams = useSearchParams();
@@ -113,6 +115,35 @@ function SuccessContent() {
                   value={workshopDate}
                 />
               </div>
+              
+              {/* Email Confirmation Notice */}
+                <div className="mt-8 rounded-2xl border border-blue-100 bg-blue-50 p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
+                      <FiMail className="h-5 w-5 text-blue-600" />
+                    </div>
+
+                    <div className="flex-1">
+                      <h3 className="text-sm font-semibold text-ink-900">
+                        Check your inbox for confirmation
+                      </h3>
+                      <p className="mt-1 text-xs leading-relaxed text-ink-600">
+                        A registration confirmation email has been sent to your registered
+                        email address. Please check your inbox (and spam folder if needed).
+                      </p>
+
+                      <a
+                        href="https://mail.google.com"
+                        target="_blank"
+                        rel="noopener noreferrer"
+  className="mt-3 flex w-full items-center justify-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700"
+                      >
+                        <SiGmail className=" h-4 w-4"/>
+                        Open Mail
+                      </a>
+                    </div>
+                  </div>
+                </div>
 
               {/* Quick Actions */}
               <div className="mt-8 border-t border-ink-100 pt-8">
@@ -121,7 +152,7 @@ function SuccessContent() {
                 </p>
                 <div className="mt-4 grid gap-3 sm:grid-cols-3">
                   <a
-                    href="https://chat.whatsapp.com/"
+                    href="https://chat.whatsapp.com/Hy78ZU3IF5m1SrRcqTumya"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex flex-col items-center gap-2 rounded-2xl border border-ink-100 bg-white p-4 text-center transition-all hover:-translate-y-0.5 hover:border-green-300 hover:shadow-soft"
@@ -145,7 +176,8 @@ function SuccessContent() {
                   </a>
 
                   <Link
-                    href="/"
+                    href="https://www.researchustad.org"
+                    target='_blank'
                     className="flex flex-col items-center gap-2 rounded-2xl border border-ink-100 bg-white p-4 text-center transition-all hover:-translate-y-0.5 hover:border-accent-300 hover:shadow-soft"
                   >
                     <FiExternalLink className="h-5 w-5 text-accent-600" />
