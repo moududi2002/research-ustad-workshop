@@ -14,12 +14,15 @@ import {
   FiHash,
   FiMessageCircle,
   FiExternalLink,
+  FiClock,
 } from 'react-icons/fi';
 import { HiOutlineAcademicCap } from 'react-icons/hi2';
 
 import { getRegistration } from '@/lib/api';
 import type { RegistrationResponse } from '@/types';
 import { SiGmail } from "react-icons/si";
+import { BiLogoZoom } from "react-icons/bi";
+
 
 
 function SuccessContent() {
@@ -51,6 +54,8 @@ function SuccessContent() {
   }, [registrationId]);
 
   const workshopDate = ' 17 October 2026';
+  const workshopTime = ' 8:30 - 10:30 (BST)';
+  const workshopValue= 'Online (Zoom)'
 
   const calendarUrl =
     'https://calendar.google.com/calendar/render?action=TEMPLATE' +
@@ -114,6 +119,18 @@ function SuccessContent() {
                   label="Workshop Date"
                   value={workshopDate}
                 />
+
+                <DetailRow
+                  icon={<FiClock className="h-4 w-4" />}
+                  label="Workshop Time"
+                  value={workshopTime}
+                />
+                <DetailRow
+                  icon={<BiLogoZoom className="h-4 w-4" />}
+                  label="Workshop Value"
+                  value={workshopValue}
+                />
+
               </div>
               
               {/* Email Confirmation Notice */}

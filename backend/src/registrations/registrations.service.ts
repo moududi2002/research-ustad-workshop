@@ -109,6 +109,9 @@ export class RegistrationsService {
   });
 
   const workshopDate ='17 October 2026';
+  const workshopTime ='8:00 - 10:00 PM(BST)';
+  const workshopVanue='Online (Zoom)';
+
 
   await transporter.sendMail({
     from: `"Research Ustad" <${process.env.SMTP_USER}>`,
@@ -156,15 +159,26 @@ export class RegistrationsService {
             <strong>Workshop Date:</strong>
             ${workshopDate}
           </p>
+
+          <p style="margin: 8px 0;">
+            <strong>Workshop Time:</strong>
+            ${workshopTime}
+          </p>
+
+          <p style="margin: 8px 0;">
+            <strong>Workshop Vanue:</strong>
+            💻 ${workshopVanue} 
+          </p>
+
         </div>
 
 
            <p>
           Please keep your Registration ID for future reference.
         </p>
-
+          <br>
           <p>
-          Further workshop details and joining instructions will be shared with you before the event.
+          <strong> Further workshop details and joining instructions will be shared with you before the event. </strong>
         </p>
 
         <p>

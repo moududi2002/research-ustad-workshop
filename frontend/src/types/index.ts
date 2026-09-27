@@ -19,6 +19,8 @@ export interface RegistrationResponse {
   fullName: string;
   email: string;
   workshopDate: string;
+  workshopTime: string;
+  workshopVanue: string;
   createdAt: string;
 }
 
