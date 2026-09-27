@@ -109,7 +109,7 @@ export class RegistrationsService {
   });
 
   const workshopDate ='17 October 2026';
-  const workshopTime ='8:00 - 10:00 PM(BST)';
+  const workshopTime ='8:30 - 10:30 PM(BST)';
   const workshopVanue='Online (Zoom)';
 
 
@@ -180,7 +180,7 @@ export class RegistrationsService {
           <p>
           <strong> Further workshop details and joining instructions will be shared with you before the event. </strong>
         </p>
-
+         <br>
         <p>
           We look forward to seeing you at the workshop.
         </p>
