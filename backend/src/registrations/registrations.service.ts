@@ -8,7 +8,7 @@ import { CreateRegistrationDto } from './dto/create-registration.dto';
 import { UpdateRegistrationDto } from './dto/update-registration.dto';
 import * as nodemailer from 'nodemailer';
 import { RegistrationGateway } from './registration.gateway';
-import UAParser from 'ua-parser-js';
+import { UAParser } from 'ua-parser-js';
 
 
 
