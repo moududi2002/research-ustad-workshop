@@ -68,6 +68,7 @@ const countries = [
   'Other',
 ];
 
+
 export default function RegistrationForm() {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
@@ -80,6 +81,9 @@ export default function RegistrationForm() {
   } = useForm<RegistrationSchemaType>({
     resolver: zodResolver(registrationSchema),
   });
+
+  const emailValue = watch('email');
+
 
   const higherStudyInterest = watch('higherStudyInterest');
 
@@ -135,6 +139,17 @@ export default function RegistrationForm() {
               className="input-field"
               {...register('email')}
             />
+
+            {emailValue && (
+              <p className="mt-2 flex items-start gap-1.5 text-xs leading-relaxed text-amber-600">
+              <span>⚠️</span>
+              <span>
+                Please recheck your email. This email will be used to issue your
+                certificate and for future opportunities from Research Ustad.
+              </span>
+              </p>
+            )}
+
             {errors.email && (
               <p className="error-text">{errors.email.message}</p>
             )}

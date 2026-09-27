@@ -158,18 +158,72 @@ export class RegistrationsService {
           </p>
         </div>
 
-        <p>
+
+           <p>
           Please keep your Registration ID for future reference.
         </p>
+
+          <p>
+          Further workshop details and joining instructions will be shared with you before the event.
+        </p>
+       
 
         <p>
           We look forward to seeing you at the workshop.
         </p>
 
         <p style="margin-top: 30px;">
-          Regards,<br />
-          <strong>Team Research Ustad</strong>
+          Regards,<br /><br />
+
+          <img
+            src="https://www.researchustad.org/logo.png"
+            alt="Research Ustad"
+            style="width: 90px; height: auto; display: block; margin-bottom: 10px;"
+          />
+
+          <strong style="font-size: 16px; color: #222;">
+            Research Ustad Team
+          </strong>
+
+          <br /><br />
+
+          <span style="font-size: 14px; color: #555;">
+            <strong>Contact:</strong>
+            <a
+              href="https://www.researchustad.org"
+              target="_blank"
+              style="color: #1f47f5; text-decoration: none;"
+            >
+              Research Ustad
+            </a>
+          </span>
+
+          <br />
+
+          <span style="font-size: 14px; color: #555;">
+            <strong>WhatsApp:</strong>
+            <a
+              href="https://wa.me/8801724653054"
+              target="_blank"
+              style="color: #25D366; text-decoration: none;"
+            >
+              +880 1724-653054
+            </a>
+          </span>
+
+          <br />
+
+          <span style="font-size: 14px; color: #555;">
+            <strong>Email:</strong>
+            <a
+              href="mailto:info@researchustad.org"
+              style="color: #1f47f5; text-decoration: none;"
+            >
+              info@researchustad.org
+            </a>
+          </span>
         </p>
+
 
       </div>
     `,
@@ -229,6 +283,6 @@ export class RegistrationsService {
     const year = new Date().getFullYear();
     const count = await this.registrationRepo.count();
     const sequence = (count + 1).toString().padStart(4, '0');
-    return `RU-${year}-${sequence}`;
+    return `RU-WS01-${sequence}`;
   }
 }
