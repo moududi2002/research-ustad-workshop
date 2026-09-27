@@ -28,6 +28,8 @@ import {
   sendCertificateNotification,
 } from '@/lib/adminApi';
 
+import { socket } from '@/lib/socket';
+
 interface Stats {
   totalRegistrations: number;
   todayRegistrations: number;
@@ -73,6 +75,30 @@ function AdminDashboard() {
       console.error(err);
     })
     .finally(() => setLoading(false));
+}, []);
+
+   useEffect(() => {
+    const handleNewRegistration = async () => {
+    try {
+      const [statsData, registrationsData] = await Promise.all([
+        getAdminStats(),
+        getRegistrations(),
+      ]);
+
+      setStats(statsData);
+      setParticipants(registrationsData);
+
+      toast.success('New registration received.');
+    } catch (err) {
+      console.error('Failed to update dashboard:', err);
+    }
+  };
+
+  socket.on('new-registration', handleNewRegistration);
+
+  return () => {
+    socket.off('new-registration', handleNewRegistration);
+  };
 }, []);
 
   const handleExport = async (format: 'csv' | 'excel') => {
@@ -407,6 +433,9 @@ function AdminDashboard() {
                         <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ink-500">
                           Higher Study
                         </th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ink-500">
+                          Device
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-ink-100">
@@ -443,6 +472,34 @@ function AdminDashboard() {
                               {p.higherStudy || p.higherStudyInterest}
                             </span>
                           </td>
+                            <td className="whitespace-nowrap px-6 py-4">
+                              <div className="flex items-center gap-3">
+                                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-ink-50 text-lg">
+                                  {p.deviceType === 'mobile'
+                                    ? '📱'
+                                    : p.deviceType === 'tablet'
+                                      ? '📲'
+                                      : '💻'}
+                                </div>
+
+                                <div>
+                                  <p className="text-sm font-semibold text-ink-800">
+                                    {p.deviceType === 'mobile'
+                                      ? 'Mobile'
+                                      : p.deviceType === 'tablet'
+                                        ? 'Tablet'
+                                        : 'Desktop'}
+                                  </p>
+
+                                  <p className="text-xs text-ink-500">
+                                    {p.operatingSystem || 'Unknown'}
+                                    {' · '}
+                                    {p.browser || 'Unknown'}
+                                  </p>
+                                </div>
+                              </div>
+                            </td>
+
                         </tr>
                       ))}
                     </tbody>

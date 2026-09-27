@@ -65,4 +65,17 @@ export class Registration {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
+
+
+
+  @Column({ nullable: true })
+  deviceType: string;
+
+  @Column({ nullable: true })
+  operatingSystem: string;
+
+  @Column({ nullable: true })
+  browser: string;
 }
+
+

@@ -7,16 +7,27 @@ import { Registration } from './registration.entity';
 import { CreateRegistrationDto } from './dto/create-registration.dto';
 import { UpdateRegistrationDto } from './dto/update-registration.dto';
 import * as nodemailer from 'nodemailer';
+import { RegistrationGateway } from './registration.gateway';
+import UAParser from 'ua-parser-js';
+
+
 
 
 @Injectable()
 export class RegistrationsService {
   constructor(
     @InjectRepository(Registration)
-    private readonly registrationRepo: Repository<Registration>
+    private readonly registrationRepo: Repository<Registration>,
+
+    private readonly registrationGateway: RegistrationGateway,
+
+
   ) {}
 
-  async create(dto: CreateRegistrationDto): Promise<Registration> {
+  async create(
+    dto: CreateRegistrationDto,
+    userAgent?: string,
+  ): Promise<Registration> {
   const existing = await this.registrationRepo.findOne({
     where: { email: dto.email },
   });
@@ -27,14 +38,34 @@ export class RegistrationsService {
     );
   }
 
+  const parser = new UAParser(userAgent);
+
+  const deviceType =
+    parser.getDevice().type === 'mobile'
+      ? 'mobile'
+      : parser.getDevice().type === 'tablet'
+        ? 'tablet'
+        : 'desktop';
+
+  const operatingSystem = parser.getOS().name || 'Unknown';
+  const browser = parser.getBrowser().name || 'Unknown';
+
   const registrationId = await this.generateRegistrationId();
 
   const registration = this.registrationRepo.create({
     ...dto,
     registrationId,
+    deviceType,
+    operatingSystem,
+    browser,
   });
 
   const savedRegistration = await this.registrationRepo.save(registration);
+
+  this.registrationGateway.notifyNewRegistration({
+  id: registration.id,
+  name: registration.fullName,
+  });
 
   // Send confirmation email after successful registration
   try {

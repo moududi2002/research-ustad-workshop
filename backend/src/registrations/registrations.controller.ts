@@ -11,6 +11,7 @@ import {
   HttpCode,
   HttpStatus,
   UseGuards,
+  Headers 
 } from '@nestjs/common';
 import { RegistrationsService } from './registrations.service';
 import { CreateRegistrationDto } from './dto/create-registration.dto';
@@ -26,7 +27,10 @@ export class RegistrationsController {
   // Public — anyone can register
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async create(@Body() dto: CreateRegistrationDto) {
+  async create(
+    @Body() dto: CreateRegistrationDto,
+    @Headers('user-agent') userAgent: string,
+  ) {
     const registration = await this.registrationsService.create(dto);
 
     return {
