@@ -54,7 +54,7 @@ function SuccessContent() {
   }, [registrationId]);
 
   const workshopDate = ' 17 October 2026';
-  const workshopTime = ' 8:30 - 10:30 (BST)';
+  const workshopTime = ' 8:30 - 10:30 PM (BST)';
   const workshopValue= 'Online (Zoom)'
 
   const calendarUrl =
