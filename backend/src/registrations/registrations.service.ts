@@ -157,12 +157,15 @@ export class RegistrationsService {
 
         <p>Dear ${registration.fullName},</p>
 
+         <p>Congratulations! Your registration has been successfully confirmed.</p>
+         <p></P>
+
         <p>
           Thank you for registering for the
           <strong>Research Ustad Grand Opening Workshop</strong>.
         </p>
 
-        <p>Congratulations! Your registration has been successfully confirmed.</p>
+       
 
         <div style="
           background: #f7f8fc;
