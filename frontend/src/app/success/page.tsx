@@ -233,15 +233,19 @@ function DetailRow({
   value: string;
 }) {
   return (
-    <div className="flex items-center justify-between rounded-xl bg-ink-50 px-4 py-3">
+    <div className="flex flex-col gap-1 rounded-xl bg-ink-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
       <div className="flex items-center gap-2.5">
         <span className="text-ink-400">{icon}</span>
         <span className="text-sm text-ink-500">{label}</span>
       </div>
-      <span className="text-sm font-semibold text-ink-900">{value}</span>
+
+      <span className="break-all text-sm font-semibold text-ink-900 sm:text-right">
+        {value}
+      </span>
     </div>
   );
 }
+
 
 export default function SuccessPage() {
   return (

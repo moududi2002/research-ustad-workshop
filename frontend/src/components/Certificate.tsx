@@ -87,42 +87,45 @@ export default function Certificate() {
 
            <div className="py-8">
 
-  {/* Certificate ID */}
-  <div className="text-left">
-    <p className="text-[9px] font-semibold uppercase tracking-widest text-ink-400">
-      Certificate ID
-    </p>
+                <div className="py-8">
 
-    <p className="mt-1 font-mono text-xs font-bold tracking-wide text-ink-700">
-      RU-W01/26-XXXXX
-    </p>
-  </div>
+                {/* Certificate ID */}
+                <div className="text-left">
+                  <p className="text-[9px] font-semibold uppercase tracking-widest text-ink-400">
+                    Certificate ID
+                  </p>
 
-  {/* Main Certificate Content */}
-  <div className=" -mt-10 text-center">
-    <p className="text-xs uppercase tracking-widest text-ink-400">
-      This certificate is proudly presented to
-    </p>
+                  <p className="mt-1 font-mono text-xs font-bold tracking-wide text-ink-700">
+                    RU-W01/26-XXXXX
+                  </p>
+                </div>
 
-    <p className="mt-3 font-display text-2xl font-bold text-ink-950">
-      Participant Name
-    </p>
+                {/* Main Certificate Content */}
+                <div className="mt-8 text-center sm:-mt-10">
+                  <p className="text-xs uppercase tracking-widest text-ink-400">
+                    This certificate is proudly presented to
+                  </p>
 
-    <p className="mt-3 text-xs leading-relaxed text-ink-500">
-      for successfully completing the
-      <br />
+                  <p className="mt-3 font-display text-2xl font-bold text-ink-950">
+                    Participant Name
+                  </p>
 
-      <span className="font-semibold text-ink-700">
-        Research to Higher Study Workshop
-      </span>
+                  <p className="mt-3 text-xs leading-relaxed text-ink-500">
+                    for successfully completing the
+                    <br />
 
-      <br />
+                    <span className="font-semibold text-ink-700">
+                      Research to Higher Study Workshop
+                    </span>
 
-      held on 17 October 2026
-    </p>
-  </div>
+                    <br />
 
-</div>
+                    held on 17 October 2026
+                  </p>
+                </div>
+
+              </div>
+              </div>
 
 
               <div className="flex items-center justify-between border-t border-ink-100 pt-4">

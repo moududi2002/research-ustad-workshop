@@ -131,7 +131,7 @@ export class RegistrationsService {
           <strong>Research Ustad Grand Opening Workshop</strong>.
         </p>
 
-        <p>Your registration has been successfully confirmed.</p>
+        <p>Congratulations! Your registration has been successfully confirmed.</p>
 
         <div style="
           background: #f7f8fc;
@@ -176,11 +176,9 @@ export class RegistrationsService {
            <p>
           Please keep your Registration ID for future reference.
         </p>
-          <br>
           <p>
           <strong> Further workshop details and joining instructions will be shared with you before the event. </strong>
         </p>
-         <br>
         <p>
           We look forward to seeing you at the workshop.
         </p>
