@@ -31,7 +31,11 @@ export class RegistrationsController {
     @Body() dto: CreateRegistrationDto,
     @Headers('user-agent') userAgent: string,
   ) {
-    const registration = await this.registrationsService.create(dto);
+
+    const registration = await this.registrationsService.create(
+  dto,
+  userAgent,
+);
 
     return {
       id: registration.id,
