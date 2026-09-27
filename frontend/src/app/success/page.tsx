@@ -50,7 +50,7 @@ function SuccessContent() {
     });
   }, [registrationId]);
 
-  const workshopDate = '26 September 2026';
+  const workshopDate = ' 17 October 2026';
 
   const calendarUrl =
     'https://calendar.google.com/calendar/render?action=TEMPLATE' +
@@ -59,7 +59,7 @@ function SuccessContent() {
     '&dates=20260926T100000Z/20260926T120000Z' +
     '&details=' +
     encodeURIComponent(
-      'Research to Higher Study: Building a Strong Academic Profile for Global Opportunities'
+      'Research to Higher Study: Building a Strong Research Profile for Global Opportunities'
     );
 
   return (

@@ -131,7 +131,7 @@ export class AdminService {
       <div style="font-family: Inter, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #1f47f5;">Workshop Reminder</h2>
         <p>Dear Participant,</p>
-        <p>This is a friendly reminder that the <strong>Research Ustad Grand Opening Workshop</strong> is happening on <strong>26 September 2026</strong>.</p>
+        <p>This is a friendly reminder that the <strong>Research Ustad Grand Opening Workshop</strong> is happening on <strong>17 October 2026</strong>.</p>
         <p>Please make sure you join on time. The session will run for approximately 2 hours.</p>
         <p>Looking forward to seeing you there!</p>
         <p>— Team Research Ustad</p>

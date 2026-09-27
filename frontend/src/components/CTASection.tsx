@@ -32,7 +32,7 @@ export default function CTASection() {
             </Link>
             <div className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-5 py-4 text-sm font-semibold text-white backdrop-blur">
               <FiCalendar className="h-4 w-4" />
-              26 September 2026
+              17 October 2026
             </div>
           </div>
         </div>

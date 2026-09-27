@@ -108,7 +108,7 @@ export class RegistrationsService {
     },
   });
 
-  const workshopDate = '26 September 2026';
+  const workshopDate ='17 October 2026';
 
   await transporter.sendMail({
     from: `"Research Ustad" <${process.env.SMTP_USER}>`,

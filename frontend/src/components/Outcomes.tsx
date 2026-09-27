@@ -6,7 +6,7 @@ const outcomes = [
   'Fundamentals of academic research',
   'How to start research from undergraduate level',
   'Research projects and thesis opportunities',
-  'Academic profile building strategies',
+  'Research Profile building strategies',
   'Publication pathways',
   'Research networking techniques',
   'Scholarship preparation insights',

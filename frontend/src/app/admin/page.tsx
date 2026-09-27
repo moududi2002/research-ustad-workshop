@@ -299,7 +299,7 @@ function AdminDashboard() {
                       Participant Management
                     </h2>
                     <p className="mt-0.5 text-sm text-ink-500">
-                      Search, filter, and manage all registrations.
+                      Search, filter and manage all registrations.
                     </p>
                   </div>
                   <div className="relative flex gap-3">

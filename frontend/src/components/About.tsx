@@ -16,13 +16,13 @@ export default function About() {
             </h2>
             <p className="mt-4 text-base leading-relaxed text-ink-600">
               This free workshop is designed for undergraduate students, graduates,
-              higher study aspirants, and beginner researchers who want to
+              higher study aspirants and beginner researchers who want to
               understand how research experience can strengthen their academic
               profile and support their higher study journey.
             </p>
             <p className="mt-4 text-base leading-relaxed text-ink-600">
               Participants will gain practical insights into research,
-              publications, academic networking, scholarships, and international
+              publications, academic networking, scholarships and international
               academic opportunities.
             </p>
           </div>
@@ -38,17 +38,17 @@ export default function About() {
                 {
                   icon: <HiOutlineGlobeAlt className="h-6 w-6" />,
                   title: 'Global Academic Pathways',
-                  text: 'Discover scholarships, research assistantships, and international opportunities.',
+                  text: 'Discover scholarships, research assistantships and international opportunities.',
                 },
                 {
                   icon: <HiOutlineBookOpen className="h-6 w-6" />,
                   title: 'Profile Building Strategy',
-                  text: 'Build a structured academic profile that stands out to admissions committees.',
+                  text: 'Build a structured Research Profile that stands out to admissions committees.',
                 },
                 {
                   icon: <HiOutlineGlobeAlt className="h-6 w-6" />,
                   title: 'Networking Techniques',
-                  text: 'Connect with mentors, faculty members, and researchers worldwide.',
+                  text: 'Connect with mentors, faculty members and researchers worldwide.',
                 },
               ].map((item) => (
                 <div key={item.title} className="card">

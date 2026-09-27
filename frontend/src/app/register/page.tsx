@@ -41,7 +41,7 @@ export default function RegisterPage() {
                     <div className="flex items-center gap-3 rounded-xl bg-primary-50/60 px-4 py-3">
                       <FiCalendar className="h-4 w-4 shrink-0 text-primary-600" />
                       <span className="text-sm font-medium text-ink-800">
-                        26 September 2026
+                        17 October 2026 , 8:30 PM (BST)
                       </span>
                     </div>
                     <div className="flex items-center gap-3 rounded-xl bg-primary-50/60 px-4 py-3">

@@ -41,7 +41,7 @@ export default function AboutResearchUstad() {
             <p className="mt-4 text-base leading-relaxed text-ink-600">
               Research Ustad is an academic and research-focused platform dedicated
               to empowering students and researchers through mentorship, research
-              opportunities, skill development, and academic collaboration.
+              opportunities, skill development and academic collaboration.
             </p>
             <div className="mt-6 inline-flex items-center gap-2 rounded-xl bg-accent-50 px-4 py-3 text-sm font-medium text-accent-800">
               <HiOutlineHeart className="h-4 w-4" />

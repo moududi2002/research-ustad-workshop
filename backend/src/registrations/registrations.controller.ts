@@ -34,7 +34,7 @@ export class RegistrationsController {
       registrationId: registration.registrationId,
       fullName: registration.fullName,
       email: registration.email,
-      workshopDate: '26 September 2026',
+      workshopDate: '17 October 2026',
       createdAt: registration.createdAt,
     };
   }
@@ -51,7 +51,7 @@ export class RegistrationsController {
       registrationId: reg.registrationId,
       fullName: reg.fullName,
       email: reg.email,
-      workshopDate: '26 September 2026',
+      workshopDate: '17 October 2026',
       createdAt: reg.createdAt,
     };
   }

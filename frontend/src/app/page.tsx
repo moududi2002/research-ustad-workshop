@@ -20,7 +20,6 @@ export default function Home() {
         <About />
         <Promise />
         <WhoShouldAttend />
-        <Agenda />
         <Outcomes />
         <Certificate />
         <AboutResearchUstad />

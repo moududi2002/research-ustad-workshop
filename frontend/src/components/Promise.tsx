@@ -7,7 +7,7 @@ const promises = [
   'How research experience strengthens higher study applications.',
   'The role of publications and academic networking.',
   'How to build a structured research profile.',
-  'Pathways to scholarships, research assistantships, and global opportunities.',
+  'Pathways to scholarships, research assistantships and global opportunities.',
 ];
 
 export default function Promise() {

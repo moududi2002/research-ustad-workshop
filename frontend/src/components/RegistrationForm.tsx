@@ -79,9 +79,6 @@ export default function RegistrationForm() {
     formState: { errors },
   } = useForm<RegistrationSchemaType>({
     resolver: zodResolver(registrationSchema),
-    defaultValues: {
-      higherStudyInterest: 'No',
-    },
   });
 
   const higherStudyInterest = watch('higherStudyInterest');
@@ -321,7 +318,7 @@ export default function RegistrationForm() {
           />
           <span className="text-sm leading-relaxed text-ink-700">
             I agree that my submitted information may be used for workshop
-            communication, participant analysis, certificate preparation, and
+            communication, participant analysis, certificate preparation and
             sharing relevant future opportunities from Research Ustad.{' '}
             <span className="font-semibold text-red-500">*</span>
           </span>

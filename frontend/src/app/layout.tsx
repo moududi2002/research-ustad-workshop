@@ -6,19 +6,19 @@ import './globals.css';
 export const metadata: Metadata = {
   title: 'Research Ustad Grand Opening Workshop | Research to Higher Study',
   description:
-    'Join the free Research Ustad Grand Opening Workshop on 26 September 2026. Learn how to build a strong academic profile for global opportunities.',
+    'Join the free Research Ustad Grand Opening Workshop on  17 October 2026. Learn how to build a strong Research Profile for global opportunities.',
   keywords: [
     'Research Ustad',
     'Workshop',
     'Higher Study',
     'Research',
-    'Academic Profile',
+    'Research Profile',
     'Scholarship',
   ],
   openGraph: {
     title: 'Research Ustad Grand Opening Workshop',
     description:
-      'Research to Higher Study: Building a Strong Academic Profile for Global Opportunities',
+      'Research to Higher Study: Building a Strong Research Profile for Global Opportunities',
     type: 'website',
   },
 };

@@ -7,6 +7,8 @@ import {
   FiArrowRight,
   FiCheckCircle,
 } from 'react-icons/fi';
+import { MdOutlineAccessTimeFilled } from "react-icons/md";
+
 import { HiOutlineAcademicCap, HiOutlineSparkles } from 'react-icons/hi2';
 import Image from 'next/image';
 
@@ -31,13 +33,13 @@ export default function Hero() {
             <h1 className="mt-6 font-display text-4xl font-extrabold leading-tight tracking-tight text-ink-950 sm:text-5xl lg:text-6xl">
               Research to Higher Study:{' '}
               <span className="bg-gradient-to-r from-primary-600 to-accent-500 bg-clip-text text-transparent">
-                Building a Strong Academic Profile
+                Building a Strong Research Profile
               </span>{' '}
               for Global Opportunities
             </h1>
 
             <p className="mt-6 max-w-2xl text-base leading-relaxed text-ink-600 sm:text-lg">
-              A free, hands-on workshop for undergraduate students, graduates, and
+              A free, hands-on workshop for undergraduate students, graduates and
               higher study aspirants who want to understand how research experience
               can unlock global academic opportunities.
             </p>
@@ -46,7 +48,11 @@ export default function Hero() {
             <div className="mt-8 flex flex-wrap gap-3">
               <div className="inline-flex items-center gap-2 rounded-xl border border-ink-100 bg-white px-4 py-2.5 text-sm font-medium text-ink-700 shadow-sm">
                 <FiCalendar className="h-4 w-4 text-primary-600" />
-                26 September 2026
+                17 October 2026
+              </div>
+              <div className="inline-flex items-center gap-2 rounded-xl border border-ink-100 bg-white px-4 py-2.5 text-sm font-medium text-ink-700 shadow-sm">
+                < MdOutlineAccessTimeFilled className="h-4 w-4 text-primary-600" />
+                8.30 PM (BST)
               </div>
               <div className="inline-flex items-center gap-2 rounded-xl border border-ink-100 bg-white px-4 py-2.5 text-sm font-medium text-ink-700 shadow-sm">
                 <FiClock className="h-4 w-4 text-primary-600" />
@@ -111,7 +117,7 @@ export default function Hero() {
                 <div className="mt-6 space-y-4">
                   {[
                     'Research Fundamentals',
-                    'Academic Profile Building',
+                    'Research Profile Building',
                     'Publication Pathways',
                     'Scholarship Preparation',
                     'Global Opportunities Roadmap',

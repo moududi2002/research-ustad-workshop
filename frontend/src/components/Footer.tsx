@@ -29,7 +29,7 @@ export default function Footer() {
             <p className="mt-4 max-w-md text-sm leading-relaxed text-ink-500">
               An academic and research-focused platform dedicated to empowering
               students and researchers through mentorship, research opportunities,
-              skill development, and academic collaboration.
+              skill development and academic collaboration.
             </p>
             <div className="mt-6 flex gap-3">
               <a
