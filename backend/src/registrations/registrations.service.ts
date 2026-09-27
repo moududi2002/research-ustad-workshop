@@ -166,7 +166,6 @@ export class RegistrationsService {
           <p>
           Further workshop details and joining instructions will be shared with you before the event.
         </p>
-       
 
         <p>
           We look forward to seeing you at the workshop.
