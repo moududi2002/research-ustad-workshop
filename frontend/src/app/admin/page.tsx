@@ -27,8 +27,6 @@ import {
   filterParticipants,
   getFilterOptions,
   getCampaignProgress,
-  sendWorkshopReminder,
-  sendCertificateNotification,
   type Participant,
   type FilterOptions,
   type EmailFilters,
@@ -115,23 +113,13 @@ function EmailManagementContent() {
     toast.success(`Applied: ${label}`);
   };
 
-  const handleSendReminder = async () => {
-    try {
-      const res = await sendWorkshopReminder();
-      toast.success(`Reminder sent to ${res.sent} participants.`);
-    } catch {
-      toast.error('Failed to send reminder.');
-    }
-  };
+  const handleSendReminder = () => {
+  toast('Workshop Reminder feature will be enabled soon.');
+};
 
-  const handleSendCertificate = async () => {
-    try {
-      const res = await sendCertificateNotification();
-      toast.success(`Certificate notification sent to ${res.sent}.`);
-    } catch {
-      toast.error('Failed to send certificate notification.');
-    }
-  };
+const handleSendCertificate = () => {
+  toast('Certificate Notification feature will be enabled soon.');
+};
 
   const handleSent = async (campaignId: string, totalRecipients: number) => {
     setProgress({
