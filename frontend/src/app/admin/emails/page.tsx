@@ -27,13 +27,13 @@ import {
   filterParticipants,
   getFilterOptions,
   getCampaignProgress,
-  sendWorkshopReminder,
-  sendCertificateNotification,
   type Participant,
   type FilterOptions,
   type EmailFilters,
 } from '@/lib/emailApi';
 import { adminLogout } from '@/lib/adminApi';
+
+
 
 const emptyOptions: FilterOptions = {
   universities: [],
@@ -116,21 +116,11 @@ function EmailManagementContent() {
   };
 
   const handleSendReminder = async () => {
-    try {
-      const res = await sendWorkshopReminder();
-      toast.success(`Reminder sent to ${res.sent} participants.`);
-    } catch {
-      toast.error('Failed to send reminder.');
-    }
+    toast('Workshop Reminder feature will be enabled soon.');
   };
 
   const handleSendCertificate = async () => {
-    try {
-      const res = await sendCertificateNotification();
-      toast.success(`Certificate notification sent to ${res.sent}.`);
-    } catch {
-      toast.error('Failed to send certificate notification.');
-    }
+   toast('Certificate Notification feature will be enabled soon.');
   };
 
   const handleSent = async (campaignId: string, totalRecipients: number) => {
