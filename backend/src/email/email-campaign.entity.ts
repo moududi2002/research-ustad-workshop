@@ -15,8 +15,8 @@ export class EmailCampaign {
   @Column()
   subject: string;
 
-  @Column({ type: 'text' })
-  bodyHtml: string;
+ @Column({ name: 'body_html', type: 'text' })
+ bodyHtml: string;
 
   @Column({ type: 'simple-json', default: '[]' })
   cc: string[];
