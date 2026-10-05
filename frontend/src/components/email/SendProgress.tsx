@@ -19,6 +19,22 @@ interface Props {
 export default function SendProgress({ open, progress, onClose }: Props) {
   if (!open || !progress) return null;
 
+  const failures = progress.failures ?? [];
+  {failures.length > 0 && (
+    <div className="mt-5 max-h-32 overflow-y-auto rounded-xl bg-red-50 p-3 text-left">
+      <p className="text-xs font-bold uppercase tracking-wider text-red-700">
+        Failed:
+      </p>
+      <ul className="mt-1 space-y-1">
+        {failures.map((f, i) => (
+          <li key={i} className="text-xs text-red-700">
+            <span className="font-mono">{f.email}</span> — {f.reason}
+          </li>
+        ))}
+      </ul>
+    </div>
+  )}
+
   const done = progress.status === 'sent' || progress.status === 'partial' || progress.status === 'failed';
   const percent =
     progress.totalRecipients > 0
