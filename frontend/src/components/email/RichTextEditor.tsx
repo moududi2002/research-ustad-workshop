@@ -78,7 +78,7 @@ export default function RichTextEditor({ value, onChange }: Props) {
             <tr>
               <td style="padding-right: 14px; vertical-align: top;">
                 <img
-                  src="https://workshop.researchustad.org/RU_Logo.png"
+                  src="https://workshop.researchustad.org/RU_logo.png"
                   alt="Company Logo"
                   width="80"
                   style="display: block; width: 80px; height: auto;"
@@ -92,7 +92,7 @@ export default function RichTextEditor({ value, onChange }: Props) {
 
                 <div style="font-size: 13px; color: #374151; margin-top: 8px;">
                     <img
-                      src="https://workshop.researchustad.org/gmail.png"
+                      src="https://workshop.researchustad.org/mail.png"
                       width="14"
                       height="14"
                       style="vertical-align: middle; margin-right: 5px;"
