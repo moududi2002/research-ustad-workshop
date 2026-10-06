@@ -72,70 +72,68 @@ export default function RichTextEditor({ value, onChange }: Props) {
     editor.focus();
 
     const signatureHtml = `
-      <div class="email-signature" style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #e5e7eb;">
+      <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #e5e7eb;">
         <table cellpadding="0" cellspacing="0" border="0" style="font-family: Arial, sans-serif; color: #374151;">
           <tbody>
             <tr>
+
+              <!-- LEFT: Logo (Name এর বাম পাশে, top aligned) -->
               <td style="padding-right: 14px; vertical-align: top;">
                 <img
                   src="https://workshop.researchustad.org/RU_logo.png"
-                  alt="Company Logo"
+                  alt="Research Ustad"
                   width="80"
-                  style="display: block; width: 80px; height: auto;"
+                  style="display: block; width: 80px; height: auto; border: 0;"
                 />
               </td>
 
+              <!-- RIGHT: Name + all contact lines (vertically stacked) -->
               <td style="vertical-align: top;">
-                <div style="font-size: 16px; font-weight: 700; color: #111827;">
+
+                <!-- Name -->
+                <div style="font-size: 16px; font-weight: 700; color: #111827; margin: 0 0 6px 0;">
                   Research Ustad
                 </div>
 
-                <div style="font-size: 13px; color: #374151; margin-top: 8px;">
-                    <img
-                      src="https://workshop.researchustad.org/mail.png"
-                      width="14"
-                      height="14"
-                      style="vertical-align: middle; margin-right: 5px;"
-                      alt="Email"
-                    />
-                    <a
-                      href="mailto:info@researchustad.org"
-                      style="color: #2563eb; text-decoration: none;"
-                    >
-                      info@researchustad.org
-                    </a>
-                  </div>
+                <!-- Mail row: icon + text SAME line -->
+                <div style="font-size: 13px; color: #374151; margin: 3px 0;">
+                  <img
+                    src="https://workshop.researchustad.org/mail.png"
+                    width="14" height="14"
+                    style="vertical-align: middle; margin-right: 6px; border: 0;"
+                    alt=""
+                  /><a href="mailto:info@researchustad.org"
+                      style="color: #2563eb; text-decoration: none; vertical-align: middle;">
+                    info@researchustad.org
+                  </a>
+                </div>
 
-                <div style="font-size: 13px; color: #374151; margin-top: 3px;">
+                <!-- Phone row -->
+                <div style="font-size: 13px; color: #374151; margin: 3px 0;">
                   📞 +880 1724-653054
                 </div>
 
-                <div style="font-size: 13px; margin-top: 3px;">
-                  🌐
-                  <a
-                    href="https://researchustad.org"
-                    style="color: #2563eb; text-decoration: none;"
-                  >
+                <!-- Website row -->
+                <div style="font-size: 13px; margin: 3px 0;">
+                  🌐 <a href="https://researchustad.org"
+                        style="color: #2563eb; text-decoration: none;">
                     researchustad.org
                   </a>
                 </div>
 
-                <div style="font-size: 13px; margin-top: 3px;">
+                <!-- WhatsApp row -->
+                <div style="font-size: 13px; margin: 3px 0;">
                   <img
                     src="https://workshop.researchustad.org/WhatsApp.png"
-                    width="14"
-                    height="14"
-                    style="vertical-align: middle; margin-right: 5px;"
-                    alt="WhatsApp"
-                  />
-
-                  <a
-                    href="https://api.whatsapp.com/send?phone=8801724653054&text=Greetings%20from%20Research%20Ustad."
-                    style="color: #25D366; text-decoration: none;"
-                  >
+                    width="14" height="14"
+                    style="vertical-align: middle; margin-right: 6px; border: 0;"
+                    alt=""
+                  /><a href="https://api.whatsapp.com/send?phone=8801724653054&text=Greetings%20from%20Research%20Ustad."
+                      style="color: #25D366; text-decoration: none; vertical-align: middle;">
                     WhatsApp
                   </a>
                 </div>
+
               </td>
             </tr>
           </tbody>
