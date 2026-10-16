@@ -13,6 +13,7 @@ import { EmailCampaign } from './email/email-campaign.entity';
 import { EmailGroup } from './email/email-group.entity';
 import { EmailGroupMember } from './email/email-group-member.entity';
 import { SmsLog } from './sms/sms-log.entity';
+import { SmsModule } from './sms/sms.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { SmsLog } from './sms/sms-log.entity';
     RegistrationsModule,
     AdminModule,
     EmailModule,
+    SmsModule,
   ],
 })
 export class AppModule {}

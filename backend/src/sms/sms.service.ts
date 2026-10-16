@@ -9,6 +9,7 @@ import { randomUUID } from 'crypto';
 import { Repository } from 'typeorm';
 import { Registration } from '../registrations/registration.entity';
 import { SmsLog } from './sms-log.entity';
+import { BadGatewayException } from '@nestjs/common';
 
 type SendInput = {
   mode: 'all' | 'selected' | 'manual';
