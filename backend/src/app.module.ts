@@ -12,6 +12,7 @@ import { Admin } from './auth/admin.entity';
 import { EmailCampaign } from './email/email-campaign.entity';
 import { EmailGroup } from './email/email-group.entity';
 import { EmailGroupMember } from './email/email-group-member.entity';
+import { SmsLog } from './sms/sms-log.entity';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { EmailGroupMember } from './email/email-group-member.entity';
           EmailCampaign,
           EmailGroup,
           EmailGroupMember,
+          SmsLog,
         ],
         synchronize: config.get('NODE_ENV') !== 'production',
         logging: false,
