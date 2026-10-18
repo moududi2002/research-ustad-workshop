@@ -7,6 +7,7 @@ import * as nodemailer from 'nodemailer';
 import { Certificate } from './certificate.entity';
 import { CertificateEmailLog } from './certificate-email-log.entity';
 import { CertificatePdfService } from './certificate-pdf.service';
+import type SMTPTransport from 'nodemailer/lib/smtp-transport';
 
 function safe(v: string | null | undefined): string {
   return String(v || '').replace(/[&<>"']/g, c => ({
@@ -69,10 +70,11 @@ export class CertificateDispatchService {
       const password = this.config.get<string>('SMTP_PASS');
       if (!host || !username || !password) throw new Error('Missing SMTP configuration');
       const transporter = nodemailer.createTransport({
-        host, port, secure: port === 465,
-        auth: { user: username, pass: password },
-        pool: false,
-      });
+        host,
+        port,
+        secure: port === 465,
+        auth: { user, pass },
+      } as SMTPTransport.Options);
       const baseUrl = this.config.get<string>('CERT_PUBLIC_BASE_URL', 'https://workshop.researchustad.org').replace(/\/$/, '');
       const verifyUrl = `${baseUrl}/certificate/verify/${encodeURIComponent(cert.certificateId)}`;
       const department = cert.department?.trim() || 'Not specified';

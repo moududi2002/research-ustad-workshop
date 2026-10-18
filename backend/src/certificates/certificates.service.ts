@@ -11,6 +11,7 @@ import { CertificateEmailLog } from './certificate-email-log.entity';
 import { AttendanceSourceService } from './attendance-source.service';
 import { CustomCertificateDto } from './dto/issue-certificates.dto';
 
+
 function maskEmail(email: string): string {
   const [local, domain] = (email || '').split('@');
   if (!local || !domain) return 'Not available';
