@@ -9,6 +9,8 @@ import { CertificateEmailLog } from './certificate-email-log.entity';
 import { CertificatePdfService } from './certificate-pdf.service';
 import type SMTPTransport from 'nodemailer/lib/smtp-transport';
 
+
+
 function safe(v: string | null | undefined): string {
   return String(v || '').replace(/[&<>"']/g, c => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
@@ -64,17 +66,26 @@ export class CertificateDispatchService {
 
     try {
       const pdf = await this.pdf.render(cert);
-      const port = Number(this.config.get<string>('SMTP_PORT', '587'));
+      const port = Number(this.config.get<string>('SMTP_PORT', '465'));
       const host = this.config.get<string>('SMTP_HOST');
       const username = this.config.get<string>('SMTP_USER');
       const password = this.config.get<string>('SMTP_PASS');
-      if (!host || !username || !password) throw new Error('Missing SMTP configuration');
-      const transporter = nodemailer.createTransport({
+
+      if (!host || !username || !password) {
+        throw new Error('Missing SMTP configuration');
+      }
+
+      const smtpOptions: SMTPTransport.Options = {
         host,
         port,
         secure: port === 465,
-        auth: { user, pass },
-      } as SMTPTransport.Options);
+        auth: {
+          user: username,
+          pass: password,
+        },
+      };
+
+      const transporter = nodemailer.createTransport(smtpOptions);
       const baseUrl = this.config.get<string>('CERT_PUBLIC_BASE_URL', 'https://workshop.researchustad.org').replace(/\/$/, '');
       const verifyUrl = `${baseUrl}/certificate/verify/${encodeURIComponent(cert.certificateId)}`;
       const department = cert.department?.trim() || 'Not specified';
