@@ -109,7 +109,38 @@ export class CertificateDispatchService {
               <p><strong>Date:</strong> ${safe(cert.workshopDate)}</p>
             </div>
             <p>Certificate verification: <a href="${safe(verifyUrl)}">${safe(verifyUrl)}</a></p>
-            <p>Regards,<br/><strong>Research Ustad Team</strong></p>
+            <div>
+              <p style="margin-top: 30px;">
+                Regards,
+                <br>
+                <br>
+                <img src="https://www.researchustad.org/logo.png" alt="Research Ustad" style="width: 101px; height: 101px; display: block; margin-bottom: 10px;" width="101" height="101">
+                <b style="font-size: 16px; color: #222;">Research Ustad Team</b>
+                <br>
+                <br>
+                <span style="color: rgb(85, 85, 85);">
+                  <span class="size" style="font-size:14px">
+                    <b>Contact:</b>
+                    <a href="https://www.researchustad.org" style="color: #1f47f5; text-decoration: none;">Research Ustad</a>
+                  </span>
+                </span>
+                <br>
+                <span style="color: rgb(85, 85, 85);">
+                  <span class="size" style="font-size:14px">
+                    <b>WhatsApp:</b>
+                    <a href="https://wa.me/8801724653054" style="color: #25D366; text-decoration: none;">+880 1724-653054</a>
+                  </span>
+                </span>
+                <br>
+                <span style="color: rgb(85, 85, 85);">
+                  <span class="size" style="font-size:14px">
+                    <b>Email:</b>
+                    <a href="mailto:info@researchustad.org" style="color: #1f47f5; text-decoration: none;">info@researchustad.org</a>
+                  </span>
+                </span>
+              </p>
+            </div>
+
           </div>`,
         attachments: [{ filename: `${cert.certificateId}.pdf`, content: pdf, contentType: 'application/pdf' }],
       });
