@@ -25,7 +25,6 @@ import {
   exportRegistrations,
   adminLogout,
   sendWorkshopReminder,
-  sendCertificateNotification,
 } from '@/lib/adminApi';
 
 import { socket } from '@/lib/socket';
@@ -127,14 +126,7 @@ function AdminDashboard() {
     }
   };
 
-  const handleCertificateNotify = async () => {
-    try {
-      const res = await sendCertificateNotification();
-      toast.success(`Certificate notification sent to ${res.sent}.`);
-    } catch {
-      toast.error('Failed to send certificate notification.');
-    }
-  };
+
 
   const handleLogout = async () => {
     try {
@@ -540,12 +532,13 @@ function AdminDashboard() {
                   onClick={handleReminder}
                 />
                 <CommCard
-                  title="Certificate Notification"
-                  description="Notify participants when certificates are ready."
-                  buttonLabel="Notify Participants"
-                  icon={<FiMail className="h-5 w-5" />}
-                  onClick={handleCertificateNotify}
-                />
+                    title="Certificate Management"
+                    description="Issue PDF certificates to attended participants,
+                    send certificates by email, and manage verification."
+                    buttonLabel="Manage Certificates"
+                    icon={<FiMail className="h-5 w-5" />}
+                    onClick={() => router.push('/admin/certificates')}
+                  />
               </div>
             </>
           )}

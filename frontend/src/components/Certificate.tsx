@@ -73,12 +73,12 @@ export default function Certificate() {
               {/* QR Code */}
               <div className="flex flex-col items-center">
                 <QRCodeSVG
-                  value="http://workshop.researchustad.org/verify?RU-W01/26-XXXXX"
-                  size={58}
-                  bgColor="#ffffff"
-                  fgColor="#111827"
-                  level="H"
-                />
+                    value="https://workshop.researchustad.org/certificate/verify"
+                    size={58}
+                    bgColor="#ffffff"
+                    fgColor="#111827"
+                    level="H"
+                  />
                 <span className="mt-1 text-[8px] font-semibold uppercase tracking-wider text-ink-400">
                   Scan to Verify
                 </span>

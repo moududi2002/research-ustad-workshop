@@ -15,6 +15,10 @@ import { EmailGroupMember } from './email/email-group-member.entity';
 import { SmsLog } from './sms/sms-log.entity';
 import { SmsModule } from './sms/sms.module';
 
+import { CertificatesModule } from './certificates/certificates.module';
+import { Certificate } from './certificates/certificate.entity';
+import { CertificateEmailLog } from './certificates/certificate-email-log.entity';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -37,6 +41,8 @@ import { SmsModule } from './sms/sms.module';
           EmailGroup,
           EmailGroupMember,
           SmsLog,
+          Certificate,
+          CertificateEmailLog,
         ],
         synchronize: config.get('NODE_ENV') !== 'production',
         logging: false,
@@ -47,6 +53,7 @@ import { SmsModule } from './sms/sms.module';
     AdminModule,
     EmailModule,
     SmsModule,
+    CertificatesModule,
   ],
 })
 export class AppModule {}
