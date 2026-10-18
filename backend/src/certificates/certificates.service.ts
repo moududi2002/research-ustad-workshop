@@ -4,7 +4,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { randomBytes } from 'crypto';
+import { randomBytes, randomInt } from 'crypto';
 import { Registration } from '../registrations/registration.entity';
 import { Certificate } from './certificate.entity';
 import { CertificateEmailLog } from './certificate-email-log.entity';
@@ -108,7 +108,12 @@ export class CertificatesService {
       if (!r) continue;
       if (existingIds.has(registrationId)) { alreadyIssued++; continue; }
       const certificate = this.certs.create({
-        certificateId: `RU-${workshop.workshopCode}-${randomBytes(8).toString('hex').toUpperCase()}`,
+        certificateId: `RU-${workshop.workshopCode}-${Array.from(
+            { length: 6 },
+            () => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[
+              randomInt(32)
+            ]
+          ).join('')}`,
         registrationId: r.registrationId,
         source: 'registered',
         // IMPORTANT: identity fields must come exclusively from MySQL.
@@ -161,7 +166,12 @@ export class CertificatesService {
     const workshop = this.workshop();
     const email = dto.email.toLowerCase().trim();
     const cert = this.certs.create({
-      certificateId: `RU-${workshop.workshopCode}-${randomBytes(8).toString('hex').toUpperCase()}`,
+      certificateId: `RU-${workshop.workshopCode}-${Array.from(
+      { length: 6 },
+      () => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[
+        randomInt(32)
+      ]
+      ).join('')}`,
       registrationId: null, source: 'custom',
       fullName: dto.fullName.trim(), email,
       whatsapp: dto.whatsapp?.trim() || null,
