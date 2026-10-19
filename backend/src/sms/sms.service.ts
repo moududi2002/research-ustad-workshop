@@ -23,6 +23,7 @@ type Recipient = {
   name?: string;
   university?: string;
   registrationId?: string;
+  email?: string;
 };
 
 @Injectable()
@@ -46,6 +47,7 @@ export class SmsService {
         whatsapp: true,
         universityName: true,
         registrationId: true,
+        email: true,
         consent: true,
       },
       order: { createdAt: 'DESC' },
@@ -57,6 +59,7 @@ export class SmsService {
       whatsapp: r.whatsapp,
       universityName: r.universityName,
       registrationId: r.registrationId,
+      email: r.email,
       consent: r.consent,
     }));
   }
@@ -217,6 +220,7 @@ export class SmsService {
           phone: r.whatsapp,
           name: r.fullName,
           university: r.universityName,
+          email: r.email,
           registrationId: r.registrationId,
         })),
       );
@@ -259,7 +263,8 @@ export class SmsService {
     return template
       .replace(/\{\{\s*name\s*\}\}/gi, recipient.name || 'Participant')
       .replace(/\{\{\s*university\s*\}\}/gi, recipient.university || '')
-      .replace(/\{\{\s*registrationId\s*\}\}/gi, recipient.registrationId || '');
+      .replace(/\{\{\s*registrationId\s*\}\}/gi, recipient.registrationId || '')
+      .replace(/\{\{\s*email\s*\}\}/gi, recipient.email || '');
   }
 
   async refreshDeliveryStatus(logId: string) {

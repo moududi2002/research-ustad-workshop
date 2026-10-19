@@ -19,6 +19,7 @@ type Participant = {
   whatsapp: string | null;
   universityName: string | null;
   registrationId: string | null;
+  email: string | null;
   consent: boolean;
 };
 
@@ -154,7 +155,8 @@ function SmsManagementContent() {
       message
         .replace(/\{\{\s*name\s*\}\}/gi, 'Participant Name')
         .replace(/\{\{\s*university\s*\}\}/gi, 'University Name')
-        .replace(/\{\{\s*registrationId\s*\}\}/gi, 'RU-WS01-0001'),
+        .replace(/\{\{\s*registrationId\s*\}\}/gi, 'RU-WS01-0001')
+        .replace(/\{\{\s*email\s*\}\}/gi, 'participant@example.com'),
     [message],
   );
 
@@ -512,7 +514,7 @@ function ComposeSection({
       <div className="mt-2 flex justify-between text-xs text-ink-500">
         <span>
           Personalization tokens: {'{{name}}'}, {'{{university}}'},{' '}
-          {'{{registrationId}}'}
+          {'{{registrationId}}'}, {'{{email}}'}
         </span>
         <span>{message.length}/2000</span>
       </div>
