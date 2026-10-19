@@ -65,8 +65,8 @@ export class CertificatePdfService implements OnModuleDestroy {
         *{box-sizing:border-box} html,body{margin:0;padding:0;background:white}
         body{font-family:Arial,Helvetica,sans-serif;color:#23262f}
         .frame{width:680px;height:615px;padding:9px;background:white}
-        .border-outer{border:3px solid #7e6741;padding:5px;height:100%}
-        .border-inner{border:1px solid #091433;height:100%;padding:0}
+        .border-outer{border:3px solid #c59035;padding:5px;height:100%}
+        .border-inner{border:2px solid #333456;height:100%;padding:0}
         .certificate{width:100%;height:100%;padding:30px 36px;display:flex;flex-direction:column;background:white}
         .top{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #eceef2;padding-bottom:20px;min-height:92px}
         .brand{display:flex;align-items:center;gap:15px}
@@ -93,10 +93,10 @@ export class CertificatePdfService implements OnModuleDestroy {
         .center-badge{display:flex;align-items:flex-end;justify-content:center}
         .award-badge{
           width:64px;height:64px;border-radius:50%;
-          border:2px dotted #22cfe6;
+          border:2px dotted #333456;
           display:flex;align-items:center;justify-content:center;
           background:#f5f8ff;
-          box-shadow:0 0 0 4px #ffffff, 0 0 0 5px #c9a227;
+          box-shadow:0 0 0 4px #ffffff, 0 0 0 5px #c59035;
         }
         .award-badge span{font-size:28px;line-height:1}
         .issue{text-align:right;font-size:12px;color:#8793aa}
@@ -128,7 +128,7 @@ export class CertificatePdfService implements OnModuleDestroy {
                   <span><b>Anichur Rahman</b><br/>Founder &amp; CEO</span>
                 </div>
                 <div class="center-badge">
-                  <div class="award-badge"><span>🏆</span></div>
+                  <div class="award-badge"><span>🏅</span></div>
                 </div>
                 <div class="issue">
                   <strong>${escapeHtml(issueDate)}</strong>
