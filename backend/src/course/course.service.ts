@@ -904,7 +904,7 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
       data.trx_status || '',
     ).trim().toLowerCase();
 
-    if (gatewayStatus !== 'success') {
+    if (!['success', 'successful'].includes(gatewayStatus)) {
       console.info('[Course Payment] Not paid yet', {
         invoice: registration.invoiceNumber,
         gatewayStatus,
@@ -1032,7 +1032,9 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
     if (
       !/^[A-Za-z0-9_-]{10,100}$/.test(invoice) ||
       !trxId ||
-      String(payload?.trx_status).toLowerCase() !== 'success'
+      !['success', 'successful'].includes(
+        String(payload?.trx_status || '').trim().toLowerCase()
+      )
     ) {
       throw new BadRequestException('Invalid IPN');
     }
@@ -1084,13 +1086,13 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
     return { status: 'success' };
   }
 
+  // backend/src/course/course.service.ts
+
   async callback(invoice?: string) {
     const frontend = (
       process.env.COURSE_FRONTEND_PUBLIC_URL ||
       'https://workshop.researchustad.org'
     ).replace(/\/$/, '');
-
-    let paymentVerified = false;
 
     if (
       invoice &&
@@ -1105,33 +1107,21 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
       if (registration) {
         try {
           await this.verifyRegistration(registration);
-
-          const updated = await this.records.findOne({
-            _id: registration._id,
-          });
-
-          paymentVerified =
-            updated?.status === 'paid' ||
-            updated?.status === 'confirmed';
         } catch (error) {
           console.error('[Course Payment] Callback verification failed', {
             invoice,
-            message: error instanceof Error
-              ? error.message
-              : 'Unknown verification error',
+            message:
+              error instanceof Error
+                ? error.message
+                : 'Unknown verification error',
           });
         }
       }
     }
 
-    if (paymentVerified) {
-      return `${frontend}/${COURSE_SLUG}/confirmation`;
-    }
-
-    // Callback may omit the invoice or arrive before gateway
-    // settlement status is available. The browser will verify
-    // its own authenticated registration on return.
-    return `${frontend}/${COURSE_SLUG}/checkout?payment_return=1`;
+    // Never trust the browser callback as proof of payment.
+    // The next page checks the authenticated registration.
+    return `${frontend}/${COURSE_SLUG}/payment-verifying`;
   }
 
   private normalizePhone(value: string) {
