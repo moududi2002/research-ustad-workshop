@@ -38,6 +38,11 @@ type CourseStatus =
 
 type DeliveryStatus = 'pending' | 'sending' | 'sent' | 'failed';
 
+interface RegistrationCounter {
+  _id: string;
+  seq: number;
+}
+
 interface CourseRecord {
   _id: ObjectId;
   registrationId: string;
@@ -111,6 +116,7 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
   private mongo: MongoClient;
   private records: Collection<CourseRecord>;
   private coupons: Collection<CourseCoupon>;
+  private counters: Collection<RegistrationCounter>;
 
   private environment(): 'sandbox' | 'live' {
     return process.env.COURSE_PAYSTATION_ENV === 'live'
@@ -247,6 +253,10 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
 
     this.records = database.collection<CourseRecord>(
       'course_registrations',
+    );
+
+    this.counters = database.collection<RegistrationCounter>(
+      'course_registration_counters',
     );
 
     this.coupons = database.collection<CourseCoupon>(
@@ -580,8 +590,39 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
     }
 
     const accessToken = randomBytes(32).toString('hex');
-    const registrationId =
-      `RU-C01-${randomBytes(9).toString('hex').toUpperCase()}`;
+
+    // Bangladesh local year: 2026 -> 26, 2027 -> 27
+    const year = new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Asia/Dhaka',
+      year: 'numeric',
+    }).format(new Date()).slice(-2);
+
+    // Separate counter for each year
+    const counterId = `RU-C01/${year}`;
+
+    const counter = await this.counters.findOneAndUpdate(
+      { _id: counterId },
+      {
+        $inc: {
+          seq: 1,
+        },
+      },
+      {
+        upsert: true,
+        returnDocument: 'after',
+      },
+    );
+
+    if (!counter) {
+      throw new ServiceUnavailableException(
+        'Unable to generate registration ID',
+      );
+    }
+
+    // Serial numbers: 0001, 0002, 0003...
+    const serial = String(counter.seq).padStart(4, '0');
+
+    const registrationId = `RU-C01/${year}-${serial}`;
 
     const now = new Date();
 

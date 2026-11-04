@@ -49,7 +49,7 @@ export default function CourseDetailsPage() {
         <div className="container-custom flex h-20 items-center justify-between gap-4">
           <Link href="/" className="flex items-center gap-3">
             
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg">
               <Image
                     src="/images/RU_logo.png"
                     alt="logo"
@@ -77,23 +77,28 @@ export default function CourseDetailsPage() {
       </header>
 
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 text-white">
-        <div className="container-custom grid items-center gap-12 py-20 lg:grid-cols-12 lg:py-24">
+      <section className="relative overflow-hidden bg-gradient-to-b from-primary-50 via-white to-white pt-28 pb-20 sm:pt-36 sm:pb-28">
+        {/* Decorative background */}
+        <div className="absolute inset-0 bg-grid-pattern opacity-40" />
+        <div className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-primary-200/40 blur-3xl" />
+        <div className="absolute -bottom-24 -left-24 h-96 w-96 rounded-full bg-accent-200/40 blur-3xl" />
+
+        <div className="container-custom relative grid items-center gap-12 lg:grid-cols-12">
           <div className="lg:col-span-8">
-            <span className="inline-flex items-center gap-2 rounded-full border border-indigo-300/25 bg-indigo-400/10 px-4 py-2 text-sm text-indigo-200">
+            <span className="inline-flex items-center gap-2 rounded-full border border-primary-200 bg-white px-4 py-1.5 text-xs font-semibold text-primary-700 shadow-sm">
               <HiOutlineSparkles className="h-4 w-4" />
               Course 01 · Live Online Learning
             </span>
 
-            <h1 className="mt-7 max-w-4xl font-display text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
+            <h1 className="mt-7 max-w-4xl font-display text-4xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
               {COURSE_TITLE}
             </h1>
 
-            <p className="mt-5 text-xl font-medium text-indigo-200">
+            <p className="mt-5 text-xl font-medium text-primary-700">
               {COURSE_SUBTITLE}
             </p>
 
-            <p className="mt-7 max-w-3xl text-base leading-8 text-slate-300">
+            <p className="mt-7 max-w-3xl text-base leading-8 text-slate-600">
               A structured and practical learning journey designed to
               help aspiring researchers understand the research
               process, critically evaluate scholarly literature,
@@ -110,7 +115,7 @@ export default function CourseDetailsPage() {
               ].map((item) => (
                 <span
                   key={item}
-                  className="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-medium"
+                  className="rounded-full border border-primary-200 bg-white px-4 py-2 text-sm font-medium text-primary-700 shadow-sm"
                 >
                   {item}
                 </span>
@@ -120,7 +125,7 @@ export default function CourseDetailsPage() {
             <div className="mt-10 flex flex-wrap items-center gap-4">
               <Link
                 href={REGISTER_URL}
-                className="inline-flex items-center gap-2 rounded-xl bg-indigo-500 px-7 py-4 font-bold text-white transition hover:bg-indigo-400"
+                className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-7 py-4 font-bold text-white shadow-lg shadow-indigo-600/20 transition hover:bg-indigo-700"
               >
                 Register for the Masterclass
                 <HiOutlineArrowRight className="h-5 w-5" />
@@ -128,7 +133,7 @@ export default function CourseDetailsPage() {
 
               <a
                 href="#curriculum"
-                className="rounded-xl border border-white/20 px-7 py-4 font-semibold transition hover:bg-white/10"
+                className="rounded-xl border border-slate-300 bg-white px-7 py-4 font-semibold text-slate-700 transition hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700"
               >
                 Explore Curriculum
               </a>
@@ -137,8 +142,8 @@ export default function CourseDetailsPage() {
 
           {/* Hero course highlights */}
           <div className="lg:col-span-4">
-            <div className="rounded-3xl border border-white/15 bg-white/10 p-7 shadow-2xl backdrop-blur-xl">
-              <p className="text-xs font-semibold uppercase tracking-widest text-indigo-200">
+            <div className="rounded-3xl border border-slate-200 bg-white p-7 shadow-xl shadow-slate-900/5">
+              <p className="text-xs font-semibold uppercase tracking-widest text-indigo-600">
                 Course at a Glance
               </p>
 
@@ -170,15 +175,15 @@ export default function CourseDetailsPage() {
                   return (
                     <div
                       key={item.label}
-                      className="rounded-2xl border border-white/10 bg-white/10 p-4"
+                      className="rounded-2xl border border-slate-100 bg-slate-50 p-4"
                     >
-                      <Icon className="mb-4 h-6 w-6 text-indigo-300" />
+                      <Icon className="mb-4 h-6 w-6 text-indigo-600" />
 
-                      <p className="text-2xl font-extrabold">
+                      <p className="text-2xl font-extrabold text-slate-900">
                         {item.value}
                       </p>
 
-                      <p className="mt-1 text-xs text-slate-300">
+                      <p className="mt-1 text-xs font-medium text-slate-500">
                         {item.label}
                       </p>
                     </div>
@@ -186,22 +191,22 @@ export default function CourseDetailsPage() {
                 })}
               </div>
 
-              <div className="mt-6 border-t border-white/15 pt-5">
-                <p className="text-sm text-slate-300">
+              <div className="mt-6 border-t border-slate-200 pt-5">
+                <p className="text-sm text-slate-500">
                   Special Enrollment Fee
                 </p>
 
                 <div className="mt-2 flex flex-wrap items-center gap-3">
-                  <span className="text-xl text-slate-300 line-through ">
+                  <span className="text-xl text-slate-400 line-through">
                     ৳5,000
                   </span>
 
-                  <span className="text-4xl font-extrabold text-green-500">
+                  <span className="text-4xl font-extrabold text-emerald-600">
                     ৳3,000
                   </span>
                 </div>
 
-                <p className="mt-2 text-sm font-semibold text-emerald-300">
+                <p className="mt-2 text-sm font-semibold text-emerald-600">
                   Save 40% on the original fee
                 </p>
               </div>
@@ -414,7 +419,20 @@ export default function CourseDetailsPage() {
       <Certificate />
 
       {/* Enrollment CTA */}
-      <section className="bg-[#101b38] py-20 text-white">
+      <section className="relative overflow-hidden bg-gradient-to-b from-[#FBCEB1] via-[#fde4d3] to-white py-20 text-slate-900">
+          {/* Soft glow accents */}
+          <div className="pointer-events-none absolute -top-24 -right-24 h-96 w-96 rounded-full bg-[#FBCEB1]/50 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-24 -left-24 h-96 w-96 rounded-full bg-orange-200/40 blur-3xl" />
+
+          {/* Grid texture */}
+          <div
+            className="pointer-events-none absolute inset-0 opacity-30"
+            style={{
+              backgroundImage:
+                'linear-gradient(rgba(194,65,12,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(194,65,12,0.06) 1px, transparent 1px)',
+              backgroundSize: '40px 40px',
+            }}
+          />
         <div className="container-custom">
           <div className="mx-auto max-w-3xl text-center">
             <HiOutlineShieldCheck className="mx-auto h-12 w-12 text-indigo-300" />
@@ -423,25 +441,25 @@ export default function CourseDetailsPage() {
               Ready to Develop Your Research and Publishing Skills?
             </h2>
 
-            <p className="mt-5 leading-8 text-slate-300">
+            <p className="mt-5 leading-8 text-slate-700">
               Join a structured, practical learning experience and
               begin building your own research and manuscript
               development roadmap.
             </p>
 
             <div className="mt-8 flex items-center justify-center gap-4">
-              <span className="text-2xl text-slate-400 line-through">
+              <span className="text-2xl text-slate-500 line-through">
                 ৳5,000
               </span>
 
-              <span className="text-4xl font-extrabold text-green-500">
+              <span className="text-4xl font-extrabold text-green-600">
                 ৳3,000
               </span>
             </div>
 
             <Link
               href={REGISTER_URL}
-              className="mt-9 inline-flex items-center gap-3 rounded-xl bg-indigo-500 px-8 py-4 text-lg font-bold transition hover:bg-indigo-400"
+              className="mt-9 inline-flex items-center gap-3 rounded-xl bg-white text-slate-900 px-8 py-4 text-lg font-bold transition hover:bg-green-600 hover:text-white-900"
             >
               Start Registration
               <HiOutlineArrowRight className="h-6 w-6" />
