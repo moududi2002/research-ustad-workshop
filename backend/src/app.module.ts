@@ -15,6 +15,8 @@ import { EmailGroupMember } from './email/email-group-member.entity';
 import { SmsLog } from './sms/sms-log.entity';
 import { SmsModule } from './sms/sms.module';
 
+import { CourseModule } from './course/course.module';
+
 import { CertificatesModule } from './certificates/certificates.module';
 import { Certificate } from './certificates/certificate.entity';
 import { CertificateEmailLog } from './certificates/certificate-email-log.entity';
@@ -54,6 +56,7 @@ import { CertificateEmailLog } from './certificates/certificate-email-log.entity
     EmailModule,
     SmsModule,
     CertificatesModule,
+    CourseModule,
   ],
 })
 export class AppModule {}

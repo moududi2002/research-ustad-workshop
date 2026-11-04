@@ -22,9 +22,12 @@ export const registrationSchema = z.object({
   higherStudyInterest: z.enum(['Yes', 'No']),
   preferredCountry: z.string().optional(),
   registrationSource: z.string().min(1, 'Please select how you heard about us'),
-  consent: z.literal(true, {
-    errorMap: () => ({ message: 'You must agree to continue' }),
-  }),
+  consent: z.boolean().refine(
+  (value) => value === true,
+  {
+    message: "You must agree to continue",
+  }
+),
 }).refine(
   (data) => {
     if (data.higherStudyInterest === 'Yes') {

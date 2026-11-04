@@ -1,0 +1,767 @@
+// frontend/src/app/research-article-writing-academic-publishing-masterclass/checkout/page.tsx
+
+'use client';
+
+import Link from 'next/link';
+import { useCallback, useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
+
+import {
+  HiOutlineAcademicCap,
+  HiOutlineCheckCircle,
+  HiOutlineClock,
+  HiOutlineExclamationTriangle,
+  HiOutlineCreditCard,
+  HiOutlineShieldCheck,
+  HiOutlineArrowRight,
+  HiOutlineArrowPath,
+  HiOutlineEnvelope,
+  HiOutlineChatBubbleLeftRight,
+  HiOutlineIdentification,
+} from 'react-icons/hi2';
+
+const SLUG =
+  '/research-article-writing-academic-publishing-masterclass';
+
+type Status =
+  | 'draft'
+  | 'initiating'
+  | 'pending'
+  | 'paid'
+  | 'confirmed';
+
+interface Registration {
+  registrationId: string;
+  fullName: string;
+  email: string;
+  whatsapp: string;
+  academicStatus: string;
+  universityName: string;
+  department: string;
+  researchLevel: string;
+  higherStudyInterest: string;
+  preferredCountry: string;
+  registrationSource: string;
+  status: Status;
+  amount: number;
+  originalAmount: number;
+  invoiceNumber: string | null;
+  paymentUrl: string | null;
+  transactionId: string | null;
+  paymentMethod: string | null;
+  paidAt: string | null;
+  confirmedAt: string | null;
+  whatsappGroupUrl: string | null;
+  notifications: {
+    email: string;
+    sms: string;
+  };
+}
+
+async function courseApi(
+  action: string,
+  method: 'GET' | 'POST' = 'GET',
+  body?: Record<string, unknown>,
+) {
+  const response = await fetch(`/api/course/${action}`, {
+    method,
+    cache: 'no-store',
+    headers: {
+      Accept: 'application/json',
+      ...(method === 'POST'
+        ? { 'Content-Type': 'application/json' }
+        : {}),
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+
+  const result = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    const message = Array.isArray(result.message)
+      ? result.message.join(', ')
+      : result.message;
+
+    throw new Error(
+      message || 'Unable to process your request',
+    );
+  }
+
+  return result as Registration;
+}
+
+function DetailRow({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | number | null | undefined;
+}) {
+  return (
+    <div className="flex flex-col gap-1 border-b border-slate-100 py-4 last:border-0 sm:flex-row sm:items-center sm:justify-between sm:gap-5">
+      <span className="text-sm text-slate-500">
+        {label}
+      </span>
+
+      <span className="break-all text-sm font-semibold text-slate-800 sm:text-right">
+        {value || '—'}
+      </span>
+    </div>
+  );
+}
+
+function EnrollmentSteps({ status }: { status: Status }) {
+  const step =
+    status === 'confirmed'
+      ? 3
+      : status === 'paid'
+      ? 2
+      : status === 'pending' || status === 'initiating'
+      ? 1
+      : 0;
+
+  const labels = ['Details', 'Payment', 'Confirmation'];
+
+  return (
+    <div className="grid grid-cols-3 gap-2">
+      {labels.map((label, index) => (
+        <div key={label} className="text-center">
+          <div
+            className={`mx-auto flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold ${
+              index <= step
+                ? 'bg-indigo-600 text-white'
+                : 'bg-slate-100 text-slate-400'
+            }`}
+          >
+            {index + 1}
+          </div>
+
+          <p className="mt-2 text-xs font-semibold text-slate-600">
+            {label}
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default function CourseCheckoutPage() {
+  const [registration, setRegistration] =
+    useState<Registration | null>(null);
+
+  const [loading, setLoading] = useState(true);
+  const [working, setWorking] = useState(false);
+  const [error, setError] = useState('');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+
+  const refresh = useCallback(async (showToast = false) => {
+    try {
+      const result = await courseApi('status');
+      setRegistration(result);
+      setError('');
+
+      if (showToast) {
+        toast.success('Payment status updated');
+      }
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Unable to load registration',
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void refresh();
+  }, [refresh]);
+
+  useEffect(() => {
+    if (
+      registration?.status !== 'pending' &&
+      registration?.status !== 'initiating'
+    ) {
+      return;
+    }
+
+    const timer = setInterval(() => {
+      void refresh();
+    }, 10000);
+
+    return () => clearInterval(timer);
+  }, [registration?.status, refresh]);
+
+  async function proceedToPayment() {
+    setWorking(true);
+
+    try {
+      const response = await fetch('/api/course/initiate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.paymentUrl) {
+        throw new Error(data.message || 'Payment link unavailable');
+      }
+
+      const paymentUrl = new URL(data.paymentUrl);
+
+      if (paymentUrl.protocol !== 'https:') {
+        throw new Error('Invalid payment URL');
+      }
+
+      window.location.assign(data.paymentUrl);
+    } catch (err) {
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : 'Unable to initiate payment',
+      );
+
+      setWorking(false);
+      void refresh();
+    }
+  }
+
+  async function confirmRegistration() {
+    if (!acceptedTerms || registration?.status !== 'paid') {
+      return;
+    }
+
+    setWorking(true);
+
+    try {
+      const result = await courseApi(
+        'confirm',
+        'POST',
+        { termsAccepted: true },
+      );
+
+      setRegistration(result);
+
+      if (result.status === 'confirmed') {
+        toast.success('Registration confirmed successfully!');
+      }
+    } catch (err) {
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : 'Unable to confirm registration',
+      );
+    } finally {
+      setWorking(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-50">
+        <HiOutlineArrowPath className="h-10 w-10 animate-spin text-indigo-600" />
+      </div>
+    );
+  }
+
+  const status = registration?.status;
+
+  const isPaid = status === 'paid';
+  const confirmed = status === 'confirmed';
+  const pending =
+    status === 'pending' || status === 'initiating';
+
+  return (
+    <main className="min-h-screen bg-[#f5f7fc] pb-20 text-slate-900">
+      <header className="border-b border-slate-200 bg-white">
+        <div className="container-custom flex h-20 items-center justify-between">
+          <Link href="/" className="flex items-center gap-3">
+            <div className="rounded-xl bg-indigo-600 p-2.5 text-white">
+              <HiOutlineAcademicCap className="h-6 w-6" />
+            </div>
+
+            <span className="font-display text-lg font-bold">
+              Research Ustad
+            </span>
+          </Link>
+
+          <span className="text-xs font-semibold uppercase tracking-wider text-indigo-600">
+            Secure Enrollment
+          </span>
+        </div>
+      </header>
+
+      <div className="container-custom pt-10">
+        <div className="mx-auto max-w-3xl">
+          <div className="mb-8 rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
+            <EnrollmentSteps status={status || 'draft'} />
+          </div>
+
+          {error && (
+            <div
+              role="alert"
+              className="mb-6 rounded-2xl border border-rose-200 bg-rose-50 p-5 text-sm text-rose-700"
+            >
+
+                {error.toLowerCase().includes('session') && (
+                <div className="mt-4 rounded-xl border border-indigo-200 bg-white p-4">
+                    <p className="font-semibold text-slate-900">
+                    Already registered?
+                    </p>
+
+                    <p className="mt-2 text-sm leading-6 text-slate-600">
+                    Your registration information is safe.
+                    Verify your registered email to restore
+                    your secure session and continue from
+                    your previous payment status.
+                    </p>
+
+                    <Link
+                    href={`${SLUG}/register`}
+                    className="mt-4 inline-flex rounded-lg bg-indigo-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700"
+                    >
+                    Restore Registration Session
+                    </Link>
+                </div>
+                )}
+            </div>
+          )}
+
+          {registration && (
+            <div className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-xl">
+              {/* Status banner */}
+              <div
+                className={`px-6 py-10 text-center sm:px-10 ${
+                  confirmed
+                    ? 'bg-gradient-to-r from-emerald-600 to-teal-600'
+                    : isPaid
+                    ? 'bg-gradient-to-r from-emerald-600 to-green-600'
+                    : pending
+                    ? 'bg-gradient-to-r from-amber-500 to-orange-500'
+                    : 'bg-gradient-to-r from-indigo-700 to-indigo-900'
+                } text-white`}
+              >
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-white/20">
+                  {confirmed || isPaid ? (
+                    <HiOutlineCheckCircle className="h-9 w-9" />
+                  ) : pending ? (
+                    <HiOutlineClock className="h-9 w-9" />
+                  ) : (
+                    <HiOutlineIdentification className="h-9 w-9" />
+                  )}
+                </div>
+
+                <h1 className="mt-5 font-display text-2xl font-extrabold sm:text-3xl">
+                  {confirmed
+                    ? 'Registration Confirmed!'
+                    : isPaid
+                    ? 'Payment Successful'
+                    : pending
+                    ? 'Payment Pending'
+                    : 'Registration Preview'}
+                </h1>
+
+                <p className="mx-auto mt-3 max-w-lg text-sm leading-7 text-white/90">
+                  {confirmed
+                    ? 'Your enrollment is confirmed. Welcome to the Research Ustad Masterclass.'
+                    : isPaid
+                    ? 'Your payment has been independently verified. Accept the terms below to finalize enrollment.'
+                    : pending
+                    ? 'We are waiting for payment completion or gateway verification. Please do not make a duplicate payment.'
+                    : 'Your information has been saved. Review the details below before proceeding to payment.'}
+                </p>
+              </div>
+
+              <div className="space-y-8 p-6 sm:p-10">
+                {/* Course title */}
+                <section>
+                  <p className="text-xs font-bold uppercase tracking-widest text-indigo-600">
+                    Course 01
+                  </p>
+
+                  <h2 className="mt-2 text-xl font-bold leading-8">
+                    Research Article Writing & Academic Publishing Masterclass
+                  </h2>
+
+                  <p className="mt-2 text-sm text-slate-500">
+                    24 Classes · 8 Modules · Live & Practical Learning
+                  </p>
+                </section>
+
+                {/* Registration preview */}
+                <section className="rounded-2xl border border-slate-100 bg-slate-50 p-5 sm:p-7">
+                  <h3 className="mb-4 font-bold">
+                    Registration Information
+                  </h3>
+
+                  <DetailRow
+                    label="Registration ID"
+                    value={registration.registrationId}
+                  />
+
+                  <DetailRow
+                    label="Full Name"
+                    value={registration.fullName}
+                  />
+
+                  <DetailRow
+                    label="Email"
+                    value={registration.email}
+                  />
+
+                  <DetailRow
+                    label="WhatsApp"
+                    value={registration.whatsapp}
+                  />
+
+                  <DetailRow
+                    label="Academic Status"
+                    value={registration.academicStatus}
+                  />
+
+                  <DetailRow
+                    label="University"
+                    value={registration.universityName}
+                  />
+
+                  <DetailRow
+                    label="Department"
+                    value={registration.department}
+                  />
+
+                  <DetailRow
+                    label="Research Knowledge"
+                    value={registration.researchLevel}
+                  />
+
+                  <DetailRow
+                    label="Higher Study Interest"
+                    value={registration.higherStudyInterest}
+                  />
+
+                  {registration.higherStudyInterest === 'Yes' && (
+                    <DetailRow
+                      label="Preferred Country"
+                      value={registration.preferredCountry}
+                    />
+                  )}
+
+                  <DetailRow
+                    label="Registration Source"
+                    value={registration.registrationSource}
+                  />
+                </section>
+
+                {/* Pricing */}
+                <section className="rounded-2xl border border-indigo-100 bg-indigo-50 p-6">
+                  <p className="text-sm font-bold text-indigo-900">
+                    Enrollment Fee
+                  </p>
+
+                  <div className="mt-4 flex flex-wrap items-end gap-3">
+                    <span className="text-xl text-slate-400 line-through">
+                      ৳5,000
+                    </span>
+
+                    <span className="text-4xl font-extrabold text-indigo-950">
+                      ৳3,000
+                    </span>
+
+                    <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
+                      40% OFF
+                    </span>
+                  </div>
+
+                  <p className="mt-3 text-xs text-indigo-700">
+                    Total course fee: BDT 3,000. Merchant-side
+                    gateway charges are handled separately.
+                  </p>
+                </section>
+
+                {/* Before payment */}
+                {status === 'draft' && (
+                  <section>
+                    <div className="mb-5 flex gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+                      <HiOutlineExclamationTriangle className="mt-0.5 h-5 w-5 shrink-0" />
+                      Your registration is not confirmed yet.
+                      Complete payment to continue.
+                    </div>
+
+                    <button
+                      onClick={proceedToPayment}
+                      disabled={working}
+                      className="flex w-full items-center justify-center gap-3 rounded-xl bg-indigo-600 px-5 py-4 text-lg font-bold text-white transition hover:bg-indigo-700 disabled:opacity-60"
+                    >
+                      <HiOutlineCreditCard className="h-6 w-6" />
+                      {working
+                        ? 'Preparing Secure Checkout...'
+                        : 'Proceed to Payment — ৳3,000'}
+                      <HiOutlineArrowRight className="h-5 w-5" />
+                    </button>
+
+                    <p className="mt-3 text-center text-xs text-slate-500">
+                      You will be redirected to PayStation's secure
+                      payment page.
+                    </p>
+                  </section>
+                )}
+
+                {/* Payment pending */}
+                {pending && (
+                  <section className="space-y-4">
+                    <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6">
+                      <h3 className="font-bold text-amber-900">
+                        Awaiting Payment Verification
+                      </h3>
+
+                      <p className="mt-2 text-sm leading-7 text-amber-800">
+                        Payment is not verified yet. This page
+                        automatically checks the gateway while the
+                        transaction is pending.
+                      </p>
+
+                      <DetailRow
+                        label="Invoice Number"
+                        value={registration.invoiceNumber}
+                      />
+                    </div>
+
+                    {registration.paymentUrl && (
+                      <button
+                        onClick={proceedToPayment}
+                        disabled={working}
+                        className="flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-4 font-bold text-white hover:bg-indigo-700 disabled:opacity-60"
+                      >
+                        <HiOutlineCreditCard className="h-5 w-5" />
+                        Continue Existing Payment
+                      </button>
+                    )}
+
+                    <button
+                      onClick={() => void refresh(true)}
+                      className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3.5 font-semibold text-slate-700 hover:bg-slate-50"
+                    >
+                      <HiOutlineArrowPath className="h-5 w-5" />
+                      Check Payment Status
+                    </button>
+                  </section>
+                )}
+
+                {/* Payment verified but not confirmed */}
+                {isPaid && (
+                  <section className="space-y-6">
+                    <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6">
+                      <div className="flex items-center gap-3">
+                        <HiOutlineCheckCircle className="h-7 w-7 text-emerald-600" />
+
+                        <h3 className="text-lg font-bold text-emerald-900">
+                          Payment Verified
+                        </h3>
+                      </div>
+
+                      <div className="mt-5">
+                        <DetailRow
+                          label="Amount Paid"
+                          value="BDT 3,000"
+                        />
+                        <DetailRow
+                          label="Transaction ID"
+                          value={registration.transactionId}
+                        />
+                        <DetailRow
+                          label="Payment Method"
+                          value={registration.paymentMethod}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="rounded-2xl border border-slate-200 bg-white p-6">
+                      <h3 className="text-lg font-bold">
+                        Terms & Conditions
+                      </h3>
+
+                      <p className="mt-2 text-sm text-slate-500">
+                        Please read the enrollment conditions
+                        before confirming your registration.
+                      </p>
+
+                      <div className="mt-5 max-h-72 space-y-4 overflow-y-auto rounded-xl bg-slate-50 p-5 text-sm leading-7 text-slate-700">
+                        <p>
+                          <strong>1. Course Participation:</strong>{' '}
+                          The training is conducted online through
+                          live sessions and guided practical work.
+                          Participants are responsible for their
+                          own internet connectivity.
+                        </p>
+
+                        <p>
+                          <strong>2. Academic Integrity:</strong>{' '}
+                          Participants must follow responsible
+                          research practices and avoid plagiarism,
+                          fabrication, and other misconduct.
+                        </p>
+
+                        <p>
+                          <strong>3. Course Materials:</strong>{' '}
+                          Course resources are provided for
+                          authorized learning purposes and must
+                          not be redistributed without permission.
+                        </p>
+
+                        <p>
+                          <strong>4. Publication Outcomes:</strong>{' '}
+                          Training provides knowledge and guidance
+                          but does not guarantee acceptance or
+                          publication in any journal or conference.
+                        </p>
+
+                        <p>
+                          <strong>5. Communication:</strong>{' '}
+                          Important course updates may be
+                          communicated through registered email,
+                          SMS, and the official course group.
+                        </p>
+
+                        <p>
+                          <strong>6. Schedule and Policies:</strong>{' '}
+                          Final class schedules and applicable
+                          rescheduling or refund policies must
+                          follow the official written information
+                          published by Research Ustad.
+                        </p>
+                      </div>
+
+                      <label className="mt-6 flex cursor-pointer items-start gap-3">
+                        <input
+                          type="checkbox"
+                          checked={acceptedTerms}
+                          onChange={(e) =>
+                            setAcceptedTerms(e.target.checked)
+                          }
+                          className="mt-1 h-5 w-5 shrink-0 accent-indigo-600"
+                        />
+
+                        <span className="text-sm font-medium leading-7 text-slate-700">
+                          I have read and accept the Terms and
+                          Conditions of Research Ustad Course 01.
+                        </span>
+                      </label>
+
+                      <button
+                        onClick={confirmRegistration}
+                        disabled={!acceptedTerms || working}
+                        className="mt-6 flex w-full items-center justify-center gap-3 rounded-xl bg-emerald-600 px-5 py-4 text-lg font-bold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+                      >
+                        <HiOutlineShieldCheck className="h-6 w-6" />
+                        {working
+                          ? 'Confirming Enrollment...'
+                          : 'Confirm My Registration'}
+                      </button>
+                    </div>
+                  </section>
+                )}
+
+                {/* Confirmed registration */}
+                {confirmed && (
+                  <section className="space-y-6">
+                    <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6 text-emerald-900">
+                      <div className="flex items-center gap-3">
+                        <HiOutlineCheckCircle className="h-8 w-8 text-emerald-600" />
+                        <h3 className="text-xl font-bold">
+                          Enrollment Confirmed
+                        </h3>
+                      </div>
+
+                      <p className="mt-3 text-sm leading-7">
+                        Your BDT 3,000 payment was verified and
+                        your registration has been completed.
+                        Keep your registration ID for reference.
+                      </p>
+
+                      <DetailRow
+                        label="Registration ID"
+                        value={registration.registrationId}
+                      />
+
+                      <DetailRow
+                        label="Payment Transaction ID"
+                        value={registration.transactionId}
+                      />
+                    </div>
+
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="rounded-xl border border-slate-200 bg-white p-5">
+                        <HiOutlineEnvelope className="h-6 w-6 text-indigo-600" />
+
+                        <p className="mt-3 font-bold">
+                          Email Notification
+                        </p>
+
+                        <p className="mt-2 text-sm text-slate-500">
+                          Status: {registration.notifications.email}
+                        </p>
+                      </div>
+
+                      <div className="rounded-xl border border-slate-200 bg-white p-5">
+                        <HiOutlineChatBubbleLeftRight className="h-6 w-6 text-indigo-600" />
+
+                        <p className="mt-3 font-bold">
+                          SMS Notification
+                        </p>
+
+                        <p className="mt-2 text-sm text-slate-500">
+                          Status: {registration.notifications.sms}
+                        </p>
+                      </div>
+                    </div>
+
+                    {registration.whatsappGroupUrl ? (
+                      <div className="rounded-2xl border-2 border-emerald-300 bg-gradient-to-br from-emerald-50 to-green-100 p-7 text-center">
+                        <HiOutlineChatBubbleLeftRight className="mx-auto h-11 w-11 text-emerald-600" />
+
+                        <h3 className="mt-4 text-xl font-extrabold text-emerald-950">
+                          Join Your Official Course WhatsApp Group
+                        </h3>
+
+                        <p className="mt-3 text-sm leading-7 text-emerald-800">
+                          Stay connected with course announcements,
+                          class updates and the learning community.
+                        </p>
+
+                        <a
+                          href={registration.whatsappGroupUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-6 inline-flex items-center gap-3 rounded-xl bg-emerald-600 px-7 py-4 font-bold text-white transition hover:bg-emerald-700"
+                        >
+                          Join WhatsApp Group
+                          <HiOutlineArrowRight className="h-5 w-5" />
+                        </a>
+                      </div>
+                    ) : (
+                      <div className="rounded-xl bg-indigo-50 p-5 text-sm text-indigo-900">
+                        The official Course WhatsApp Group link
+                        will be shared by Research Ustad.
+                      </div>
+                    )}
+                  </section>
+                )}
+
+                <div className="border-t border-slate-100 pt-6 text-center">
+                  <Link
+                    href={SLUG}
+                    className="text-sm font-semibold text-indigo-600 hover:underline"
+                  >
+                    View Full Course Curriculum
+                  </Link>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </main>
+  );
+}
