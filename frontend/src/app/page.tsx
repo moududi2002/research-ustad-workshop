@@ -10,6 +10,12 @@ import {
   HiOutlineClock,
 } from 'react-icons/hi2';
 
+import Footer from '@/components/Footer';
+
+import Image from 'next/image';
+
+import PayFooter from '@/components/PayFooter';
+
 const COURSE_SLUG =
   '/research-article-writing-academic-publishing-masterclass';
 
@@ -82,10 +88,15 @@ export default function Home() {
         <div className="container-custom relative py-7">
           <header className="flex items-center justify-between gap-4">
             <Link href="/" className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10">
-                <HiOutlineAcademicCap className="h-7 w-7 text-indigo-200" />
-              </div>
-
+              
+               <div className="flex h-9 w-9 items-center justify-center rounded-lg">
+                          <Image
+                                src="/images/RU_logo.png"
+                                alt="logo"
+                                width={100}
+                                height={100}
+                              />
+                        </div>
               <div>
                 <p className="font-display text-xl font-extrabold">
                   Research Ustad
@@ -250,10 +261,10 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="border-t border-slate-200 bg-white px-5 py-8 text-center text-sm text-slate-500">
-        © {new Date().getFullYear()} Research Ustad.
-        Advancing Research. Empowering Scholars.
-      </footer>
+      <Footer />
+      <PayFooter />
+
+  
     </main>
   );
 }

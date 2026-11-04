@@ -10,6 +10,7 @@ import Certificate from '@/components/Certificate';
 import AboutResearchUstad from '@/components/AboutResearchUstad';
 import CTASection from '@/components/CTASection';
 import Footer from '@/components/Footer';
+import PayFooter from '@/components/PayFooter';
 
 export default function Home() {
   return (
@@ -26,6 +27,7 @@ export default function Home() {
         <CTASection />
       </main>
       <Footer />
+      <PayFooter />
     </>
   );
 }

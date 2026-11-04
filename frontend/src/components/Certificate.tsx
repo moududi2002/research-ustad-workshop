@@ -7,9 +7,11 @@ import { QRCodeSVG } from "qrcode.react";
 
 
 const eligibility = [
-  'Attend the required portion of the workshop',
-  'Submit the feedback form',
   'Complete registration successfully',
+  'Attend the workshop/Course live or watch the recorded sessions',
+  'Complete the workshop/Course successfully',
+  'Submit the required assignments or assessments (if applicable)',
+  
 ];
 
 export default function Certificate() {

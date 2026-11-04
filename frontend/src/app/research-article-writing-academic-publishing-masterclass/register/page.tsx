@@ -22,6 +22,10 @@ import {
   RegistrationSchemaType,
 } from '@/lib/validation';
 
+import PayFooter from '@/components/PayFooter';
+import Footer from '@/components/Footer';
+import Image from 'next/image';
+
 const SLUG =
   '/research-article-writing-academic-publishing-masterclass';
 
@@ -264,9 +268,14 @@ async function onSubmit(data: RegistrationSchemaType) {
       <header className="border-b bg-white">
         <div className="container-custom flex h-20 items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
-            <div className="rounded-xl bg-indigo-600 p-2.5 text-white">
-              <HiOutlineAcademicCap className="h-6 w-6" />
-            </div>
+             <div className="flex h-9 w-9 items-center justify-center rounded-lg">
+            <Image
+                  src="/images/RU_logo.png"
+                  alt="logo"
+                  width={100}
+                  height={100}
+                />
+          </div>
 
             <div>
               <p className="font-display text-lg font-bold">
@@ -495,8 +504,10 @@ async function onSubmit(data: RegistrationSchemaType) {
 
                   <select
                     className="input-field"
+                    defaultValue=""
                     {...register('higherStudyInterest')}
                   >
+                    <option value="" disabled>Select an option</option>
                     <option value="No">No</option>
                     <option value="Yes">Yes</option>
                   </select>
@@ -579,7 +590,7 @@ async function onSubmit(data: RegistrationSchemaType) {
             <button
               type="submit"
               disabled={loading}
-              className="flex w-full items-center justify-center gap-3 rounded-xl bg-indigo-600 px-6 py-4 text-lg font-bold text-white transition hover:bg-indigo-700 disabled:opacity-60"
+              className="flex w-full items-center justify-center gap-3 rounded-xl bg-indigo-600 px-2 py-2 text-lg font-bold text-white transition hover:bg-indigo-700 disabled:opacity-60"
             >
               {loading
                 ? 'Saving Your Information...'
@@ -596,6 +607,8 @@ async function onSubmit(data: RegistrationSchemaType) {
           </form>
         </div>
       </div>
+      <Footer />
+      <PayFooter />
     </main>
   );
 }

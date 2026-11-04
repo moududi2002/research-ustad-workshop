@@ -16,6 +16,8 @@ import {
   HiOutlineSparkles,
 } from 'react-icons/hi2';
 
+import Image from 'next/image';
+
 import {
   COURSE_TITLE,
   COURSE_SUBTITLE,
@@ -23,6 +25,12 @@ import {
   COURSE_MODULES,
   COURSE_OUTCOMES,
 } from '@/data/course01';
+
+import Certificate from '@/components/C_Certificate';
+
+import Footer from '../../components/Footer';
+
+import PayFooter from '@/components/PayFooter';
 
 const REGISTER_URL =
   '/research-article-writing-academic-publishing-masterclass/register';
@@ -40,10 +48,15 @@ export default function CourseDetailsPage() {
       <header className="border-b border-slate-200 bg-white">
         <div className="container-custom flex h-20 items-center justify-between gap-4">
           <Link href="/" className="flex items-center gap-3">
-            <div className="rounded-xl bg-indigo-600 p-2.5 text-white">
-              <HiOutlineAcademicCap className="h-6 w-6" />
+            
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg">
+              <Image
+                    src="/images/RU_logo.png"
+                    alt="logo"
+                    width={100}
+                    height={100}
+                  />
             </div>
-
             <div>
               <p className="font-display text-lg font-bold">
                 Research Ustad
@@ -179,11 +192,11 @@ export default function CourseDetailsPage() {
                 </p>
 
                 <div className="mt-2 flex flex-wrap items-center gap-3">
-                  <span className="text-xl text-slate-400 line-through">
+                  <span className="text-xl text-slate-300 line-through ">
                     ৳5,000
                   </span>
 
-                  <span className="text-4xl font-extrabold">
+                  <span className="text-4xl font-extrabold text-green-500">
                     ৳3,000
                   </span>
                 </div>
@@ -397,6 +410,9 @@ export default function CourseDetailsPage() {
         </div>
       </section>
 
+      {/* Certificate */}
+      <Certificate />
+
       {/* Enrollment CTA */}
       <section className="bg-[#101b38] py-20 text-white">
         <div className="container-custom">
@@ -418,7 +434,7 @@ export default function CourseDetailsPage() {
                 ৳5,000
               </span>
 
-              <span className="text-4xl font-extrabold">
+              <span className="text-4xl font-extrabold text-green-500">
                 ৳3,000
               </span>
             </div>
@@ -439,9 +455,8 @@ export default function CourseDetailsPage() {
         </div>
       </section>
 
-      <footer className="bg-slate-950 py-8 text-center text-sm text-slate-400">
-        Research Ustad · Advancing Research. Empowering Scholars.
-      </footer>
+      < Footer />
+      <PayFooter />
     </main>
   );
 }
