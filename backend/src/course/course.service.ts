@@ -552,16 +552,20 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
   private safeRecord(r: CourseRecord) {
     return {
       registrationId: r.registrationId,
-      fullName: r.fullName,
-      email: r.email,
-      whatsapp: r.whatsapp,
-      academicStatus: r.academicStatus,
-      universityName: r.universityName,
-      department: r.department,
-      researchLevel: r.researchLevel,
-      higherStudyInterest: r.higherStudyInterest,
-      preferredCountry: r.preferredCountry,
-      registrationSource: r.registrationSource,
+        ...(r.status === 'draft'
+      ? {
+          fullName: r.fullName,
+          email: r.email,
+          whatsapp: r.whatsapp,
+          academicStatus: r.academicStatus,
+          universityName: r.universityName,
+          department: r.department,
+          researchLevel: r.researchLevel,
+          higherStudyInterest: r.higherStudyInterest,
+          preferredCountry: r.preferredCountry,
+          registrationSource: r.registrationSource,
+        }
+      : {}),
       status: r.status,
       amount: r.amount,
       originalAmount: r.originalAmount,

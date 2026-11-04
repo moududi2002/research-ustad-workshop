@@ -10,6 +10,8 @@ import PayFooter from '@/components/PayFooter';
 
 import { usePathname, useRouter } from 'next/navigation';
 
+import GatewayChargesModal from '@/components/GatewayChargesModal';
+
 import {
   HiOutlineAcademicCap,
   HiOutlineCheckCircle,
@@ -567,7 +569,8 @@ export default function CourseCheckoutPage() {
                 </section>
 
                 {/* Registration preview */}
-                <section className="rounded-2xl border border-slate-100 bg-slate-50 p-5 sm:p-7">
+                {status === 'draft' && pathname === `${SLUG}/checkout` && (
+                  <section  className="rounded-2xl border border-slate-100 bg-slate-50 p-5 sm:p-7">
                   <h3 className="mb-4 font-bold">
                     Registration Information
                   </h3>
@@ -628,7 +631,8 @@ export default function CourseCheckoutPage() {
                     label="Registration Source"
                     value={registration.registrationSource}
                   />
-                </section>
+                  </section>
+                )}
 
                 {/* Pricing */}
                 <section className="rounded-2xl border border-indigo-100 bg-indigo-50 p-6">
@@ -650,14 +654,17 @@ export default function CourseCheckoutPage() {
                     </span>
                   </div>
 
-                <p className="mt-3 text-xs text-indigo-700">
-                  Regular course fee: BDT 3,000.
-                  {registration.couponCode
-                    ? ` Coupon ${registration.couponCode} applied. Your discounted course fee is BDT ${registration.amount}.`
-                    : ''}
-                  {' '}Applicable PayStation gateway charges may be
-                  added at checkout and will be shown before payment.
-                </p>
+                  <p className="mt-3 text-xs leading-6 text-indigo-700">
+                     Regular course fee: BDT 3,000.
+                    {registration.couponCode
+                      ? ` Coupon ${registration.couponCode} applied. Your discounted course fee is BDT ${registration.amount}.`
+                      : ''}
+
+                    {' '}Applicable PayStation gateway charges may be
+                    added at checkout and will be shown before payment.
+
+                    {status === 'draft' && <GatewayChargesModal />}
+                  </p>
 
 
                 {/* Course coupon */}
