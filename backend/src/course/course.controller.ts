@@ -11,7 +11,12 @@ import {
   Query,
   Res,
   Req,
-} from '@nestjs/common';
+  Patch,
+  Param,
+  UseGuards,
+  ForbiddenException,
+  } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Response, Request } from 'express';
 import { CourseService } from './course.service';
 import { CourseRegistrationDto } from './dto/course-registration.dto';
@@ -126,6 +131,71 @@ export class CourseController {
         body?.email,
         body?.code,
     );
+  }
+
+  
+
+  @Post('coupon/apply')
+  @HttpCode(HttpStatus.OK)
+  async applyCoupon(
+    @Headers('x-course-access') token: string,
+    @Body('code') code: string,
+  ) {
+    return this.course.applyCoupon(token, code);
+  }
+
+  @Post('coupon/remove')
+  @HttpCode(HttpStatus.OK)
+  async removeCoupon(
+    @Headers('x-course-access') token: string,
+  ) {
+    return this.course.removeCoupon(token);
+  }
+
+  // Existing Workshop Admin JWT authentication required.
+  @Get('admin/coupons')
+  @UseGuards(JwtAuthGuard)
+  async listCoupons() {
+    return this.course.listCoupons();
+  }
+
+  @Post('admin/coupons')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async createCoupon(
+    @Body() body: {
+      code: string;
+      type: 'final_price' | 'percentage' | 'fixed';
+      value: number;
+      allowedEmail?: string;
+      expiresAt?: string;
+    },
+    @Headers('origin') origin?: string,
+  ) {
+    if (
+      origin &&
+      origin !== 'https://workshop.researchustad.org'
+    ) {
+      throw new ForbiddenException('Invalid request origin');
     }
+
+    return this.course.createCoupon(body);
+  }
+
+  @Patch('admin/coupons/:code')
+  @UseGuards(JwtAuthGuard)
+  async deactivateCoupon(
+    @Param('code') code: string,
+    @Headers('origin') origin?: string,
+  ) {
+    if (
+      origin &&
+      origin !== 'https://workshop.researchustad.org'
+    ) {
+      throw new ForbiddenException('Invalid request origin');
+    }
+
+    return this.course.deactivateCoupon(code);
+  }
 
 }

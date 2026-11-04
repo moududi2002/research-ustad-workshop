@@ -59,6 +59,20 @@ const ACTIONS: Record<string, {
     requiresSession: true,
     createsSession: false,
   },
+  'coupon-apply': {
+    method: 'POST',
+    backendPath: 'coupon/apply',
+    requiresSession: true,
+    createsSession: false,
+  },
+
+  'coupon-remove': {
+    method: 'POST',
+    backendPath: 'coupon/remove',
+    requiresSession: true,
+    createsSession: false,
+  },
+
 };
 
 type RouteContext = {

@@ -5,6 +5,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import Image from 'next/image';
 
 import {
   HiOutlineAcademicCap,
@@ -56,6 +57,10 @@ interface Registration {
     email: string;
     sms: string;
   };
+  baseAmount: number;
+  couponCode: string | null;
+  discountAmount: number;
+
 }
 
 async function courseApi(
@@ -154,6 +159,9 @@ export default function CourseCheckoutPage() {
   const [error, setError] = useState('');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
 
+  const [couponInput, setCouponInput] = useState('');
+  const [couponWorking, setCouponWorking] = useState(false);
+
   const refresh = useCallback(async (showToast = false) => {
     try {
       const result = await courseApi('status');
@@ -192,6 +200,65 @@ export default function CourseCheckoutPage() {
 
     return () => clearInterval(timer);
   }, [registration?.status, refresh]);
+
+  async function applyCoupon() {
+    const code = couponInput.trim().toUpperCase();
+
+    if (!code) {
+      toast.error('Please enter a coupon code');
+      return;
+    }
+
+    setCouponWorking(true);
+
+    try {
+      const updated = await courseApi(
+        'coupon-apply',
+        'POST',
+        { code },
+      );
+
+      setRegistration(updated);
+      setCouponInput('');
+
+      toast.success(
+        `Coupon applied! Payable amount: BDT ${updated.amount}`,
+      );
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : 'Unable to apply coupon',
+      );
+    } finally {
+      setCouponWorking(false);
+    }
+  }
+
+  async function removeCoupon() {
+    setCouponWorking(true);
+
+    try {
+      const updated = await courseApi(
+        'coupon-remove',
+        'POST',
+        {},
+      );
+
+      setRegistration(updated);
+      setCouponInput('');
+
+      toast.success('Coupon removed');
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : 'Unable to remove coupon',
+      );
+    } finally {
+      setCouponWorking(false);
+    }
+  }
 
   async function proceedToPayment() {
     setWorking(true);
@@ -278,13 +345,18 @@ export default function CourseCheckoutPage() {
       <header className="border-b border-slate-200 bg-white">
         <div className="container-custom flex h-20 items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
-            <div className="rounded-xl bg-indigo-600 p-2.5 text-white">
-              <HiOutlineAcademicCap className="h-6 w-6" />
-            </div>
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg">
+                <Image
+                  src="/images/RU_logo.png"
+                  alt="logo"
+                  width={100}
+                  height={100}
+                  />
+              </div>
 
-            <span className="font-display text-lg font-bold">
-              Research Ustad
-            </span>
+              <span className="font-display text-lg font-bold">
+                Research Ustad
+              </span>
           </Link>
 
           <span className="text-xs font-semibold uppercase tracking-wider text-indigo-600">
@@ -466,7 +538,7 @@ export default function CourseCheckoutPage() {
                     </span>
 
                     <span className="text-4xl font-extrabold text-indigo-950">
-                      ৳3,000
+                       ৳{registration.amount.toLocaleString('en-BD')}
                     </span>
 
                     <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
@@ -474,10 +546,100 @@ export default function CourseCheckoutPage() {
                     </span>
                   </div>
 
-                  <p className="mt-3 text-xs text-indigo-700">
-                    Total course fee: BDT 3,000. Merchant-side
-                    gateway charges are handled separately.
-                  </p>
+                <p className="mt-3 text-xs text-indigo-700">
+                  Regular course fee: BDT 3,000.
+                  {registration.couponCode
+                    ? ` Coupon ${registration.couponCode} applied. Your discounted course fee is BDT ${registration.amount}.`
+                    : ''}
+                  {' '}Applicable PayStation gateway charges may be
+                  added at checkout and will be shown before payment.
+                </p>
+
+
+                {/* Course coupon */}
+                {registration.status === 'draft' && (
+                  <div className="mt-6 border-t border-indigo-200 pt-6">
+                    <label
+                      htmlFor="courseCoupon"
+                      className="mb-2 block text-sm font-bold text-indigo-950"
+                    >
+                      Have a Coupon Code?
+                    </label>
+
+                    {registration.couponCode ? (
+                      <div className="rounded-xl border border-emerald-200 bg-white p-4">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                          <div>
+                            <p className="text-sm font-bold text-emerald-700">
+                              Coupon Applied: {registration.couponCode}
+                            </p>
+
+                            <p className="mt-1 text-sm text-slate-600">
+                              You saved ৳
+                              {registration.discountAmount.toLocaleString('en-BD')}
+                            </p>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => void removeCoupon()}
+                            disabled={couponWorking}
+                            className="rounded-lg border border-rose-200 px-4 py-2 text-sm font-semibold text-rose-600 hover:bg-rose-50 disabled:opacity-50"
+                          >
+                            {couponWorking ? 'Removing...' : 'Remove'}
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col gap-3 sm:flex-row">
+                        <input
+                          id="courseCoupon"
+                          type="text"
+                          maxLength={32}
+                          value={couponInput}
+                          onChange={(event) =>
+                            setCouponInput(event.target.value.toUpperCase())
+                          }
+                          placeholder="Enter coupon code"
+                          className="min-w-0 flex-1 rounded-xl border border-indigo-200 bg-white px-4 py-3 text-sm font-medium uppercase text-indigo-950 outline-none focus:border-indigo-500"
+                        />
+
+                        <button
+                          type="button"
+                          disabled={couponWorking || !couponInput.trim()}
+                          onClick={() => void applyCoupon()}
+                          className="rounded-xl bg-indigo-600 px-6 py-3 text-sm font-bold text-white hover:bg-indigo-700 disabled:opacity-50"
+                        >
+                          {couponWorking ? 'Applying...' : 'Apply Coupon'}
+                        </button>
+                      </div>
+                    )}
+
+                    <div className="mt-5 space-y-2 rounded-xl bg-white p-4 text-sm">
+                      <div className="flex justify-between text-slate-600">
+                        <span>Regular Course Fee</span>
+                        <span>৳3,000</span>
+                      </div>
+
+                      {registration.couponCode && (
+                        <div className="flex justify-between text-emerald-700">
+                          <span>Coupon Discount</span>
+                          <span>
+                            −৳{registration.discountAmount.toLocaleString('en-BD')}
+                          </span>
+                        </div>
+                      )}
+
+                      <div className="flex justify-between border-t pt-3 font-extrabold text-indigo-950">
+                        <span>Payable Amount</span>
+                        <span>
+                          ৳{registration.amount.toLocaleString('en-BD')}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 </section>
 
                 {/* Before payment */}
@@ -497,7 +659,7 @@ export default function CourseCheckoutPage() {
                       <HiOutlineCreditCard className="h-6 w-6" />
                       {working
                         ? 'Preparing Secure Checkout...'
-                        : 'Proceed to Payment — ৳3,000'}
+                        : `Proceed to Payment — ৳${registration.amount.toLocaleString('en-BD')}`}
                       <HiOutlineArrowRight className="h-5 w-5" />
                     </button>
 

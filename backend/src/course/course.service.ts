@@ -78,12 +78,30 @@ interface CourseRecord {
   resumeOtpExpiresAt?: Date;
   resumeOtpRequestedAt?: Date;
   resumeOtpAttempts?: number;
+
+  couponCode?: string;
+  discountAmount?: number;
+}
+
+type CouponType = 'final_price' | 'percentage' | 'fixed';
+
+interface CourseCoupon {
+  _id: ObjectId;
+  courseId: string;
+  code: string;
+  type: CouponType;
+  value: number;
+  active: boolean;
+  allowedEmail: string | null;
+  expiresAt: Date | null;
+  createdAt: Date;
 }
 
 @Injectable()
 export class CourseService implements OnModuleInit, OnModuleDestroy {
   private mongo: MongoClient;
   private records: Collection<CourseRecord>;
+  private coupons: Collection<CourseCoupon>;
 
   private environment(): 'sandbox' | 'live' {
     return process.env.COURSE_PAYSTATION_ENV === 'live'
@@ -137,6 +155,15 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
       'course_registrations',
     );
 
+    this.coupons = database.collection<CourseCoupon>(
+      'course_coupons',
+    );
+
+    await this.coupons.createIndex(
+      { courseId: 1, code: 1 },
+      { unique: true },
+    );
+
     await this.records.createIndex(
       { registrationId: 1 },
       { unique: true },
@@ -168,6 +195,263 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
   async onModuleDestroy() {
     if (this.mongo) await this.mongo.close();
   }
+
+  private normalizeCouponCode(value: unknown): string {
+    const code = String(value || '').trim().toUpperCase();
+
+    if (!/^[A-Z0-9_-]{4,32}$/.test(code)) {
+      throw new BadRequestException(
+        'Coupon must be 4–32 letters, numbers, hyphens or underscores',
+      );
+    }
+
+    return code;
+  }
+
+  private calculateCouponPrice(coupon: CourseCoupon): number {
+    if (coupon.type === 'final_price') {
+      return coupon.value;
+    }
+
+    if (coupon.type === 'percentage') {
+      return Math.max(
+        1,
+        Math.round(COURSE_FEE * (100 - coupon.value) / 100),
+      );
+    }
+
+    return Math.max(1, COURSE_FEE - coupon.value);
+  }
+
+  private validateCouponForRegistration(
+    coupon: CourseCoupon | null,
+    email: string,
+  ): asserts coupon is CourseCoupon {
+    if (
+      !coupon ||
+      !coupon.active ||
+      (coupon.expiresAt && coupon.expiresAt <= new Date())
+    ) {
+      throw new BadRequestException(
+        'Coupon is invalid, inactive or expired',
+      );
+    }
+
+    if (
+      coupon.allowedEmail &&
+      coupon.allowedEmail !== email.toLowerCase()
+    ) {
+      throw new BadRequestException(
+        'This coupon is not available for this registration',
+      );
+    }
+  }
+
+  async createCoupon(input: {
+    code?: string;
+    type?: CouponType;
+    value?: number;
+    allowedEmail?: string;
+    expiresAt?: string;
+  }) {
+    const code = this.normalizeCouponCode(input?.code);
+    const type = input?.type;
+    const value = Number(input?.value);
+
+    if (
+      !type ||
+      !['final_price', 'percentage', 'fixed'].includes(type)
+    ) {
+      throw new BadRequestException('Invalid discount type');
+    }
+
+    if (!Number.isInteger(value) || value <= 0) {
+      throw new BadRequestException(
+        'Discount value must be a positive whole number',
+      );
+    }
+
+    if (type === 'percentage' && value > 99) {
+      throw new BadRequestException(
+        'Percentage must be between 1 and 99',
+      );
+    }
+
+    if (type !== 'percentage' && value >= COURSE_FEE) {
+      throw new BadRequestException(
+        'Amount must be below the regular course fee',
+      );
+    }
+
+    const allowedEmail = String(
+      input?.allowedEmail || '',
+    ).trim().toLowerCase();
+
+    if (
+      allowedEmail &&
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(allowedEmail)
+    ) {
+      throw new BadRequestException('Invalid allowed email');
+    }
+
+    const expiresAt = input?.expiresAt
+      ? new Date(input.expiresAt)
+      : null;
+
+    if (
+      expiresAt &&
+      (
+        Number.isNaN(expiresAt.getTime()) ||
+        expiresAt <= new Date()
+      )
+    ) {
+      throw new BadRequestException(
+        'Expiry date must be in the future',
+      );
+    }
+
+    const coupon: CourseCoupon = {
+      _id: new ObjectId(),
+      courseId: COURSE_ID,
+      code,
+      type,
+      value,
+      active: true,
+      allowedEmail: allowedEmail || null,
+      expiresAt,
+      createdAt: new Date(),
+    };
+
+    try {
+      await this.coupons.insertOne(coupon);
+    } catch (error: any) {
+      if (error?.code === 11000) {
+        throw new ConflictException(
+          'A coupon with this code already exists',
+        );
+      }
+
+      throw error;
+    }
+
+    return {
+      ...coupon,
+      finalPrice: this.calculateCouponPrice(coupon),
+    };
+  }
+
+  async listCoupons() {
+    const coupons = await this.coupons
+      .find({ courseId: COURSE_ID })
+      .sort({ createdAt: -1 })
+      .toArray();
+
+    return coupons.map((coupon) => ({
+      ...coupon,
+      finalPrice: this.calculateCouponPrice(coupon),
+    }));
+  }
+
+  async deactivateCoupon(codeInput: unknown) {
+    const code = this.normalizeCouponCode(codeInput);
+
+    const result = await this.coupons.updateOne(
+      { courseId: COURSE_ID, code },
+      { $set: { active: false } },
+    );
+
+    if (!result.matchedCount) {
+      throw new NotFoundException('Coupon not found');
+    }
+
+    return {
+      success: true,
+      code,
+      active: false,
+    };
+  }
+
+  async applyCoupon(
+    accessToken: string | undefined,
+    codeInput: unknown,
+  ) {
+    const registration = await this.authorized(accessToken);
+
+    if (registration.status !== 'draft') {
+      throw new ConflictException(
+        'Coupon changes are only allowed before payment starts',
+      );
+    }
+
+    const code = this.normalizeCouponCode(codeInput);
+
+    const coupon = await this.coupons.findOne({
+      courseId: COURSE_ID,
+      code,
+    });
+
+    this.validateCouponForRegistration(
+      coupon,
+      registration.emailNormalized,
+    );
+
+    const finalPrice = this.calculateCouponPrice(coupon);
+
+    const updated = await this.records.findOneAndUpdate(
+      {
+        _id: registration._id,
+        status: 'draft',
+      },
+      {
+        $set: {
+          couponCode: code,
+          amount: finalPrice,
+          discountAmount: COURSE_FEE - finalPrice,
+          updatedAt: new Date(),
+        },
+      },
+      { returnDocument: 'after' },
+    );
+
+    if (!updated) {
+      throw new ConflictException(
+        'Payment already started; coupon cannot be changed',
+      );
+    }
+
+    return this.safeRecord(updated);
+  }
+
+  async removeCoupon(accessToken?: string) {
+    const registration = await this.authorized(accessToken);
+
+    const updated = await this.records.findOneAndUpdate(
+      {
+        _id: registration._id,
+        status: 'draft',
+      },
+      {
+        $set: {
+          amount: COURSE_FEE,
+          discountAmount: 0,
+          updatedAt: new Date(),
+        },
+        $unset: {
+          couponCode: '',
+        },
+      },
+      { returnDocument: 'after' },
+    );
+
+    if (!updated) {
+      throw new ConflictException(
+        'Coupon cannot be removed after payment initiation',
+      );
+    }
+
+    return this.safeRecord(updated);
+  }
+
 
   async register(dto: CourseRegistrationDto) {
     if (dto.consent !== true) {
@@ -296,6 +580,10 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
       whatsappGroupUrl: r.status === 'confirmed'
         ? this.getWhatsappGroupUrl()
         : null,
+
+      baseAmount: COURSE_FEE,
+      couponCode: r.couponCode || null,
+      discountAmount: r.discountAmount || 0,
     };
   }
 
@@ -402,6 +690,27 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
         'Payment initiation is already in progress',
       );
     }
+
+    if (registration.couponCode) {
+      const coupon = await this.coupons.findOne({
+        courseId: COURSE_ID,
+        code: registration.couponCode,
+      });
+
+      this.validateCouponForRegistration(
+        coupon,
+        registration.emailNormalized,
+      );
+
+      if (
+        this.calculateCouponPrice(coupon) !== registration.amount
+      ) {
+        throw new ConflictException(
+          'Coupon price has changed. Remove and reapply the coupon.',
+        );
+      }
+    }
+
     const invoiceNumber =
     `${Date.now()}${randomBytes(6).readUIntBE(0, 6) % 1000000}`
         .replace(/(\d{13})(\d{1,6})$/, (_, a, b) =>
@@ -410,7 +719,11 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
 
 
     const locked = await this.records.updateOne(
-      { _id: registration._id, status: 'draft' },
+      {
+        _id: registration._id,
+        status: 'draft',
+        amount: registration.amount,
+      },
       {
         $set: {
           status: 'initiating',
@@ -442,8 +755,8 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
         password,
         invoice_number: invoiceNumber,
         currency: 'BDT',
-        payment_amount: String(COURSE_FEE),
-        pay_with_charge: '0',
+        payment_amount: String(registration.amount),
+        pay_with_charge: '1',
         reference: COURSE_ID,
         checkout_items: 'Course 01 - Research Publishing Masterclass',
         cust_name: registration.fullName,
@@ -562,7 +875,7 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
 
     if (
     String(data.invoice_number) !== registration.invoiceNumber ||
-    Number(data.payment_amount) !== COURSE_FEE ||
+    Number(data.payment_amount) !== registration.amount ||
     !data.trx_id ||
     (
         data.reference &&
@@ -645,7 +958,7 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
 
     if (
         !Number.isFinite(Number(payload.trx_amount)) ||
-        Number(payload.trx_amount) !== COURSE_FEE
+        Number(payload.trx_amount) !== registration.amount
         ) {
         throw new BadRequestException('IPN amount mismatch');
     }
@@ -774,7 +1087,7 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
           <h2>Research Article Writing &amp; Academic Publishing Masterclass</h2>
           <p><strong>Registration ID:</strong> ${this.escapeHtml(registration.registrationId)}</p>
           <p><strong>Transaction ID:</strong> ${this.escapeHtml(registration.transactionId)}</p>
-          <p><strong>Amount Paid:</strong> BDT ${COURSE_FEE}</p>
+          <p><strong>Amount Paid:</strong> BDT ${registration.amount}</p>
           <p><strong>Format:</strong> 24 live classes · 8 modules · practical assignments</p>
           ${groupHtml}
           <p>Please keep this email for your records. The course schedule and joining instructions will be communicated separately.</p>
@@ -797,7 +1110,7 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
     const message =
       `Research Ustad: Course 01 registration confirmed. ` +
       `ID: ${registration.registrationId}. ` +
-      `Paid: BDT ${COURSE_FEE}. Check your email for details.`;
+      `Paid: BDT ${registration.amount}. Check your email for details.`;
 
     const response = await fetch(
       'https://api.zendsms.com/api/v1/send-sms',
