@@ -1,12 +1,24 @@
 // backend/src/course/course.module.ts
-
 import { Module } from '@nestjs/common';
+import { AuthModule } from '../auth/auth.module';
 import { CourseController } from './course.controller';
 import { CourseService } from './course.service';
 
 @Module({
-  controllers: [CourseController],
-  providers: [CourseService],
-  exports: [CourseService],
+  imports: [
+    AuthModule,
+  ],
+
+  controllers: [
+    CourseController,
+  ],
+
+  providers: [
+    CourseService,
+  ],
+
+  exports: [
+    CourseService,
+  ],
 })
 export class CourseModule {}

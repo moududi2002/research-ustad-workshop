@@ -81,6 +81,15 @@ interface CourseRecord {
 
   couponCode?: string;
   discountAmount?: number;
+
+  deviceInfo?: {
+    type: string;
+    browser: string;
+    os: string;
+    network: string;
+    userAgent: string;
+  };
+
 }
 
 type CouponType = 'final_price' | 'percentage' | 'fixed';
@@ -117,6 +126,91 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
 
   private hash(value: string): string {
     return createHash('sha256').update(value).digest('hex');
+  }
+
+  private describeRegistrationDevice(input?: {
+    userAgent?: string;
+    network?: string;
+  }): NonNullable<CourseRecord['deviceInfo']> {
+    const ua = String(input?.userAgent || '').slice(0, 512);
+
+    const rawNetwork = String(
+      input?.network || '',
+    ).trim().slice(0, 64);
+
+    let network = 'Unavailable';
+
+    // Mask IPv4 addresses before storing.
+    const ipv4 = rawNetwork.split('.');
+
+    if (
+      ipv4.length === 4 &&
+      ipv4.every(
+        (part) =>
+          /^\d{1,3}$/.test(part) &&
+          Number(part) <= 255,
+      )
+    ) {
+      network = `${ipv4.slice(0, 3).join('.')}.xxx`;
+    } else if (
+      rawNetwork.includes(':') &&
+      /^[0-9a-f:.]+$/i.test(rawNetwork)
+    ) {
+      // Mask IPv6 network address.
+      network = `${rawNetwork.split(':').slice(0, 3).join(':')}:…`;
+    }
+
+    // Browser detection.
+    const browser =
+      /Edg\//.test(ua)
+        ? 'Microsoft Edge'
+        : /OPR\//.test(ua)
+        ? 'Opera'
+        : /SamsungBrowser\//.test(ua)
+        ? 'Samsung Internet'
+        : /CriOS\//.test(ua)
+        ? 'Chrome iOS'
+        : /FxiOS\//.test(ua)
+        ? 'Firefox iOS'
+        : /Firefox\//.test(ua)
+        ? 'Firefox'
+        : /Chrome\//.test(ua)
+        ? 'Chrome'
+        : /Safari\//.test(ua)
+        ? 'Safari'
+        : 'Unknown';
+
+    // Operating system detection.
+    const os =
+      /Windows NT/.test(ua)
+        ? 'Windows'
+        : /iPad|iPhone|iPod/.test(ua)
+        ? 'iOS / iPadOS'
+        : /Android/.test(ua)
+        ? 'Android'
+        : /Mac OS X|Macintosh/.test(ua)
+        ? 'macOS'
+        : /Linux/.test(ua)
+        ? 'Linux'
+        : 'Unknown';
+
+    // Device category.
+    const type =
+      /iPad|Tablet|Android(?!.*Mobile)/i.test(ua)
+        ? 'Tablet'
+        : /Mobile|iPhone|iPod/i.test(ua)
+        ? 'Mobile'
+        : ua
+        ? 'Desktop'
+        : 'Unknown';
+
+    return {
+      type,
+      browser,
+      os,
+      network,
+      userAgent: ua || 'Unavailable',
+    };
   }
 
   private paymentCredentials() {
@@ -188,6 +282,11 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
         },
       },
     );
+
+    await this.records.createIndex({
+      courseId: 1,
+      createdAt: -1,
+    });
 
     console.log('Course MongoDB collection ready');
   }
@@ -453,7 +552,13 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
   }
 
 
-  async register(dto: CourseRegistrationDto) {
+  async register(
+    dto: CourseRegistrationDto,
+    device?: {
+      userAgent?: string;
+      network?: string;
+    },
+  ) {
     if (dto.consent !== true) {
       throw new BadRequestException(
         'Consent is required to create a registration',
@@ -500,6 +605,7 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
       status: 'draft',
       amount: COURSE_FEE,
       originalAmount: ORIGINAL_FEE,
+      deviceInfo: this.describeRegistrationDevice(device),
       environment: this.environment(),
       notifications: {
         email: 'pending',
@@ -525,6 +631,270 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
       registrationId,
       accessToken,
       status: 'draft',
+    };
+  }
+
+  async adminParticipants(params: {
+    page?: string;
+    limit?: string;
+    search?: string;
+    status?: string;
+  }) {
+    const page = Math.min(
+      100000,
+      Math.max(
+        1,
+        Number.parseInt(String(params.page || '1'), 10) || 1,
+      ),
+    );
+
+    const limit = Math.min(
+      20,
+      Math.max(
+        1,
+        Number.parseInt(String(params.limit || '20'), 10) || 20,
+      ),
+    );
+
+    const search = String(
+      params.search || '',
+    ).trim().slice(0, 80);
+
+    const status = String(params.status || 'all');
+
+    const validStatuses = [
+      'all',
+      'draft',
+      'initiating',
+      'pending',
+      'paid',
+      'confirmed',
+    ];
+
+    if (!validStatuses.includes(status)) {
+      throw new BadRequestException(
+        'Invalid participant status filter',
+      );
+    }
+
+    const filter: any = {
+      courseId: COURSE_ID,
+    };
+
+    if (status !== 'all') {
+      filter.status = status;
+    }
+
+    // Escape regex characters to make search safe.
+    if (search) {
+      const escaped = search.replace(
+        /[.*+?^${}()|[\]\\]/g,
+        '\\$&',
+      );
+
+      filter.$or = [
+        {
+          registrationId: {
+            $regex: escaped,
+            $options: 'i',
+          },
+        },
+        {
+          fullName: {
+            $regex: escaped,
+            $options: 'i',
+          },
+        },
+        {
+          email: {
+            $regex: escaped,
+            $options: 'i',
+          },
+        },
+        {
+          whatsapp: {
+            $regex: escaped,
+            $options: 'i',
+          },
+        },
+        {
+          universityName: {
+            $regex: escaped,
+            $options: 'i',
+          },
+        },
+        {
+          invoiceNumber: {
+            $regex: escaped,
+            $options: 'i',
+          },
+        },
+      ];
+    }
+
+    const [records, total, summary] =
+      await Promise.all([
+        this.records
+          .find(filter, {
+            projection: {
+              _id: 1,
+              registrationId: 1,
+              fullName: 1,
+              email: 1,
+              whatsapp: 1,
+              academicStatus: 1,
+              universityName: 1,
+              department: 1,
+              researchLevel: 1,
+              higherStudyInterest: 1,
+              preferredCountry: 1,
+              registrationSource: 1,
+              status: 1,
+              amount: 1,
+              originalAmount: 1,
+              couponCode: 1,
+              discountAmount: 1,
+              environment: 1,
+              invoiceNumber: 1,
+              transactionId: 1,
+              paymentMethod: 1,
+              paidAt: 1,
+              confirmedAt: 1,
+              createdAt: 1,
+              updatedAt: 1,
+              notifications: 1,
+              deviceInfo: 1,
+            },
+          })
+          .sort({
+            createdAt: -1,
+            _id: -1,
+          })
+          .skip((page - 1) * limit)
+          .limit(limit)
+          .toArray(),
+
+        this.records.countDocuments(filter),
+
+        this.records
+          .aggregate([
+            {
+              $match: {
+                courseId: COURSE_ID,
+              },
+            },
+            {
+              $group: {
+                _id: null,
+
+                total: {
+                  $sum: 1,
+                },
+
+                awaitingPayment: {
+                  $sum: {
+                    $cond: [
+                      {
+                        $in: [
+                          '$status',
+                          ['pending', 'initiating'],
+                        ],
+                      },
+                      1,
+                      0,
+                    ],
+                  },
+                },
+
+                paid: {
+                  $sum: {
+                    $cond: [
+                      {
+                        $in: [
+                          '$status',
+                          ['paid', 'confirmed'],
+                        ],
+                      },
+                      1,
+                      0,
+                    ],
+                  },
+                },
+
+                confirmed: {
+                  $sum: {
+                    $cond: [
+                      {
+                        $eq: ['$status', 'confirmed'],
+                      },
+                      1,
+                      0,
+                    ],
+                  },
+                },
+
+                revenue: {
+                  $sum: {
+                    $cond: [
+                      {
+                        $in: [
+                          '$status',
+                          ['paid', 'confirmed'],
+                        ],
+                      },
+                      '$amount',
+                      0,
+                    ],
+                  },
+                },
+              },
+            },
+          ])
+          .next(),
+      ]);
+
+    return {
+      page,
+      pageSize: limit,
+      total,
+
+      overview: summary || {
+        total: 0,
+        awaitingPayment: 0,
+        paid: 0,
+        confirmed: 0,
+        revenue: 0,
+      },
+
+      rows: records.map((r) => ({
+        id: r._id.toHexString(),
+        registrationId: r.registrationId,
+        fullName: r.fullName,
+        email: r.email,
+        whatsapp: r.whatsapp,
+        academicStatus: r.academicStatus,
+        universityName: r.universityName,
+        department: r.department,
+        researchLevel: r.researchLevel,
+        higherStudyInterest: r.higherStudyInterest,
+        preferredCountry: r.preferredCountry,
+        registrationSource: r.registrationSource,
+        status: r.status,
+        amount: r.amount,
+        originalAmount: r.originalAmount,
+        couponCode: r.couponCode || null,
+        discountAmount: r.discountAmount || 0,
+        environment: r.environment,
+        invoiceNumber: r.invoiceNumber || null,
+        transactionId: r.transactionId || null,
+        paymentMethod: r.paymentMethod || null,
+        paidAt: r.paidAt || null,
+        confirmedAt: r.confirmedAt || null,
+        createdAt: r.createdAt,
+        updatedAt: r.updatedAt,
+        notifications: r.notifications,
+        deviceInfo: r.deviceInfo || null,
+      })),
     };
   }
 
@@ -588,6 +958,7 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
       baseAmount: COURSE_FEE,
       couponCode: r.couponCode || null,
       discountAmount: r.discountAmount || 0,
+      
     };
   }
 

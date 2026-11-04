@@ -28,8 +28,19 @@ export class CourseController {
   constructor(private readonly course: CourseService) {}
 
   @Post('register')
-  async register(@Body() dto: CourseRegistrationDto) {
-    return this.course.register(dto);
+  async register(
+    @Body() dto: CourseRegistrationDto,
+    @Req() req: Request,
+  ) {
+    return this.course.register(dto, {
+      userAgent: String(
+        req.headers['user-agent'] || '',
+      ).slice(0, 512),
+
+      network: String(
+        req.headers['x-real-ip'] || '',
+      ).slice(0, 64),
+    });
   }
 
   @Get('status')
@@ -150,6 +161,22 @@ export class CourseController {
     @Headers('x-course-access') token: string,
   ) {
     return this.course.removeCoupon(token);
+  }
+
+  @Get('admin/participants')
+  @UseGuards(JwtAuthGuard)
+  async getCourseParticipants(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('search') search?: string,
+    @Query('status') status?: string,
+  ) {
+    return this.course.adminParticipants({
+      page,
+      limit,
+      search,
+      status,
+    });
   }
 
   // Existing Workshop Admin JWT authentication required.

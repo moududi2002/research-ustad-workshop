@@ -684,6 +684,15 @@ export default function CourseRegistrationPage() {
                 </span>
               </label>
 
+              <p className="mt-3 text-xs leading-5 text-slate-500">
+                For enrollment support and security, we record basic
+                device information, including device type, browser,
+                operating system and a masked network address.
+
+                {' '}We do not collect a precise location or
+                unique hardware fingerprint.
+              </p>
+
               {errors.consent && (
                 <p className="mt-2 text-sm text-red-600">
                   {errors.consent.message}

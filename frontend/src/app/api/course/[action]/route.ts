@@ -150,9 +150,25 @@ async function handleRequest(
             ? { 'Content-Type': 'application/json' }
             : {}),
           ...(config.requiresSession && accessToken
-            ? { 'x-course-access': accessToken }
-            : {}),
+          ? {
+              'x-course-access': accessToken,
+            }
+          : {}),
+
+        // Forward limited device metadata only during registration.
+        ...(action === 'register'
+          ? {
+              'user-agent': (
+                request.headers.get('user-agent') || ''
+              ).slice(0, 512),
+
+              'x-real-ip': (
+                request.headers.get('x-real-ip') || ''
+              ).slice(0, 64),
+            }
+          : {}),
         },
+        
         body:
           config.method === 'POST'
             ? JSON.stringify(await request.json())

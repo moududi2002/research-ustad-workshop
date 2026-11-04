@@ -182,8 +182,22 @@ function AdminDashboard() {
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <button
-                onClick={() => handleExport('csv')}
+
+            {/* Course 01 Participants Dashboard */}
+            <button
+              type="button"
+              onClick={() =>
+                router.push('/admin/course-participants')
+              }
+              className="btn-secondary !py-2.5 !text-sm"
+            >
+              <FiUsers className="h-4 w-4" />
+              Course Participants
+            </button>
+
+            {/* Existing CSV Export */}
+            <button
+              onClick={() => handleExport('csv')}
                 className="btn-secondary !py-2.5 !text-sm"
               >
                 <FiDownload className="h-4 w-4" />
