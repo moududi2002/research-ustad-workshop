@@ -371,7 +371,7 @@ export default function CourseRegistrationPage() {
       <header className="border-b bg-white">
         <div className="container-custom flex h-20 items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg">
               <Image
                 src="/images/RU_logo.png"
                 alt="logo"

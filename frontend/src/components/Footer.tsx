@@ -14,7 +14,7 @@ export default function Footer() {
         <div className="grid gap-10 md:grid-cols-4">
           <div className="md:col-span-2">
             <Link href="/" className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg ">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg ">
                 <Image
                   src="/images/RU_logo.png"
                   alt="logo"
@@ -35,28 +35,28 @@ export default function Footer() {
               <a
                 href="https://www.facebook.com/ResearchUstad/"
                 aria-label="Facebook"
-                className="flex h-9 w-9 items-center justify-center rounded-lg border border-ink-200 text-ink-600 transition-colors hover:border-primary-300 hover:bg-primary-50 hover:text-primary-600"
+                className="flex h-12 w-12 items-center justify-center rounded-lg border border-ink-200 text-ink-600 transition-colors hover:border-primary-300 hover:bg-primary-50 hover:text-primary-600"
               >
                 <FaFacebook className="h-4 w-4" />
               </a>
               <a
                 href="https://www.linkedin.com/company/researchustad"
                 aria-label="LinkedIn"
-                className="flex h-9 w-9 items-center justify-center rounded-lg border border-ink-200 text-ink-600 transition-colors hover:border-primary-300 hover:bg-primary-50 hover:text-primary-600"
+                className="flex h-12 w-12 items-center justify-center rounded-lg border border-ink-200 text-ink-600 transition-colors hover:border-primary-300 hover:bg-primary-50 hover:text-primary-600"
               >
                 <FaLinkedin className="h-4 w-4" />
               </a>
               <a
                 href="https://www.researchustad.org"
                 aria-label="Website"
-                className="flex h-9 w-9 items-center justify-center rounded-lg border border-ink-200 text-ink-600 transition-colors hover:border-primary-300 hover:bg-primary-50 hover:text-primary-600"
+                className="flex h-12 w-12 items-center justify-center rounded-lg border border-ink-200 text-ink-600 transition-colors hover:border-primary-300 hover:bg-primary-50 hover:text-primary-600"
               >
                 <FiGlobe className="h-4 w-4" />
               </a>
               <a
                 href="mailto:info@researchustad.org"
                 aria-label="Email"
-                className="flex h-9 w-9 items-center justify-center rounded-lg border border-ink-200 text-ink-600 transition-colors hover:border-primary-300 hover:bg-primary-50 hover:text-primary-600"
+                className="flex h-12 w-12 items-center justify-center rounded-lg border border-ink-200 text-ink-600 transition-colors hover:border-primary-300 hover:bg-primary-50 hover:text-primary-600"
               >
                 <FiMail className="h-4 w-4" />
               </a>

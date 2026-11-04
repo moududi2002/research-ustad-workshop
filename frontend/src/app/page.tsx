@@ -89,7 +89,7 @@ export default function Home() {
           <header className="flex items-center justify-between gap-4">
             <Link href="/" className="flex items-center gap-3">
               
-               <div className="flex h-9 w-9 items-center justify-center rounded-lg">
+               <div className="flex h-12 w-12 items-center justify-center rounded-lg">
                           <Image
                                 src="/images/RU_logo.png"
                                 alt="logo"
