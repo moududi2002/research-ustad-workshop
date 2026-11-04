@@ -114,7 +114,6 @@ export default function CourseRegistrationPage() {
     resolver: zodResolver(registrationSchema),
     defaultValues: {
       consent: false,
-      higherStudyInterest: 'No',
       department: '',
       preferredCountry: '',
     },
@@ -122,148 +121,144 @@ export default function CourseRegistrationPage() {
 
   const higherStudy = watch('higherStudyInterest');
 
-  // frontend/src/app/research-article-writing-academic-publishing-masterclass/register/page.tsx
+  async function requestResumeOtp(emailInput: string) {
+    const email = emailInput.trim().toLowerCase();
 
-async function requestResumeOtp(emailInput: string) {
-  const email = emailInput.trim().toLowerCase();
-
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    toast.error('Enter a valid registered email address');
-    return;
-  }
-
-  setResumeLoading(true);
-
-  try {
-    const response = await fetch('/api/course/resume-request', {
-      method: 'POST',
-      credentials: 'same-origin',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email }),
-    });
-
-    const result = await response.json().catch(() => ({}));
-
-    if (!response.ok) {
-      throw new Error(
-        Array.isArray(result.message)
-          ? result.message.join(', ')
-          : result.message || 'Unable to send verification code',
-      );
-    }
-
-    setResumeEmail(email);
-    setResumeOtp('');
-
-    toast.success('Check your email for a verification code');
-  } catch (error) {
-    toast.error(
-      error instanceof Error
-        ? error.message
-        : 'Unable to send verification code',
-    );
-  } finally {
-    setResumeLoading(false);
-  }
-}
-
-async function verifyResumeOtp() {
-  if (!/^\d{6}$/.test(resumeOtp)) {
-    toast.error('Please enter the six-digit OTP');
-    return;
-  }
-
-  setResumeLoading(true);
-
-  try {
-    const response = await fetch('/api/course/resume-verify', {
-      method: 'POST',
-      credentials: 'same-origin',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: resumeEmail,
-        code: resumeOtp,
-      }),
-    });
-
-    const result = await response.json().catch(() => ({}));
-
-    if (!response.ok) {
-      throw new Error(
-        Array.isArray(result.message)
-          ? result.message.join(', ')
-          : result.message || 'OTP verification failed',
-      );
-    }
-
-    // Server has now set a new HttpOnly session cookie.
-    toast.success('Registration session restored');
-
-    router.replace(`${SLUG}/checkout`);
-  } catch (error) {
-    toast.error(
-      error instanceof Error
-        ? error.message
-        : 'Verification failed',
-    );
-  } finally {
-    setResumeLoading(false);
-  }
-}
-
-async function onSubmit(data: RegistrationSchemaType) {
-  setLoading(true);
-
-  try {
-    const response = await fetch('/api/course/register', {
-      method: 'POST',
-      credentials: 'same-origin',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-
-    const result = await response.json().catch(() => ({}));
-
-    // Existing email: do not create another registration.
-    // Verify ownership by sending OTP.
-    if (response.status === 409) {
-      await requestResumeOtp(data.email);
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toast.error('Enter a valid registered email address');
       return;
     }
 
-    if (!response.ok) {
-      throw new Error(
-        Array.isArray(result.message)
-          ? result.message.join(', ')
-          : result.message || 'Registration could not be saved',
+    setResumeLoading(true);
+
+    try {
+      const response = await fetch('/api/course/resume-request', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(
+          Array.isArray(result.message)
+            ? result.message.join(', ')
+            : result.message || 'Unable to send verification code',
+        );
+      }
+
+      setResumeEmail(email);
+      setResumeOtp('');
+
+      toast.success('Check your email for a verification code');
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : 'Unable to send verification code',
       );
+    } finally {
+      setResumeLoading(false);
+    }
+  }
+
+  async function verifyResumeOtp() {
+    if (!/^\d{6}$/.test(resumeOtp)) {
+      toast.error('Please enter the six-digit OTP');
+      return;
     }
 
-    // The successful register response includes Set-Cookie.
-    // Browser stores it before navigation.
-    toast.success(
-      'Information saved successfully. Review your registration.',
-    );
+    setResumeLoading(true);
 
-    router.push(`${SLUG}/checkout`);
-  } catch (error) {
-    toast.error(
-      error instanceof Error
-        ? error.message
-        : 'Registration could not be saved',
-    );
-  } finally {
-    setLoading(false);
+    try {
+      const response = await fetch('/api/course/resume-verify', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: resumeEmail,
+          code: resumeOtp,
+        }),
+      });
+
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(
+          Array.isArray(result.message)
+            ? result.message.join(', ')
+            : result.message || 'OTP verification failed',
+        );
+      }
+
+      // Server has now set a new HttpOnly session cookie.
+      toast.success('Registration session restored');
+
+      router.replace(`${SLUG}/checkout`);
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : 'Verification failed',
+      );
+    } finally {
+      setResumeLoading(false);
+    }
   }
-}
+
+  async function onSubmit(data: RegistrationSchemaType) {
+    setLoading(true);
+
+    try {
+      const response = await fetch('/api/course/register', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json().catch(() => ({}));
+
+      // Existing email: do not create another registration.
+      // Verify ownership by sending OTP.
+      if (response.status === 409) {
+        await requestResumeOtp(data.email);
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          Array.isArray(result.message)
+            ? result.message.join(', ')
+            : result.message || 'Registration could not be saved',
+        );
+      }
+
+      // The successful register response includes Set-Cookie.
+      // Browser stores it before navigation.
+      toast.success(
+        'Information saved successfully. Review your registration.',
+      );
+
+      router.push(`${SLUG}/checkout`);
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : 'Registration could not be saved',
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const textField = (name: keyof RegistrationSchemaType) => (
     <p className="mt-1 text-xs font-medium text-red-600">
       {errors[name]?.message?.toString()}
     </p>
   );
-
-  // frontend/src/app/research-article-writing-academic-publishing-masterclass/register/page.tsx
 
   if (resumeEmail) {
     return (
@@ -376,14 +371,14 @@ async function onSubmit(data: RegistrationSchemaType) {
       <header className="border-b bg-white">
         <div className="container-custom flex h-20 items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
-             <div className="flex h-9 w-9 items-center justify-center rounded-lg">
-            <Image
-                  src="/images/RU_logo.png"
-                  alt="logo"
-                  width={100}
-                  height={100}
-                />
-          </div>
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg">
+              <Image
+                src="/images/RU_logo.png"
+                alt="logo"
+                width={100}
+                height={100}
+              />
+            </div>
 
             <div>
               <p className="font-display text-lg font-bold">
@@ -619,6 +614,7 @@ async function onSubmit(data: RegistrationSchemaType) {
                     <option value="No">No</option>
                     <option value="Yes">Yes</option>
                   </select>
+                  {textField('higherStudyInterest')}
                 </div>
 
                 {higherStudy === 'Yes' && (
