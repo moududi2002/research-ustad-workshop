@@ -6,6 +6,9 @@ import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Image from 'next/image';
+import PayFooter from '@/components/PayFooter';
+
+import { usePathname, useRouter } from 'next/navigation';
 
 import {
   HiOutlineAcademicCap,
@@ -151,6 +154,9 @@ function EnrollmentSteps({ status }: { status: Status }) {
 }
 
 export default function CourseCheckoutPage() {
+  const router = useRouter();
+  const pathname = usePathname();
+
   const [registration, setRegistration] =
     useState<Registration | null>(null);
 
@@ -183,8 +189,71 @@ export default function CourseCheckoutPage() {
   }, []);
 
   useEffect(() => {
-    void refresh();
+    let cancelled = false;
+
+    const params = new URLSearchParams(window.location.search);
+    const returnedFromPayment =
+      params.get('payment_return') === '1';
+
+    if (!returnedFromPayment) {
+      void refresh();
+
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    async function verifyAfterReturn() {
+      try {
+        const result = await courseApi(
+          'verify',
+          'POST',
+          {},
+        );
+
+        if (!cancelled) {
+          setRegistration(result);
+          setError('');
+        }
+      } catch (error) {
+        console.error('[Course Payment] Return verification failed', error);
+
+        if (!cancelled) {
+          toast.error(
+            'Payment verification is delayed. Please do not pay again.',
+          );
+
+          await refresh();
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    void verifyAfterReturn();
+
+    return () => {
+      cancelled = true;
+    };
   }, [refresh]);
+
+  useEffect(() => {
+    if (!registration) return;
+
+    const paid =
+      registration.status === 'paid' ||
+      registration.status === 'confirmed';
+
+    if (paid && pathname === `${SLUG}/checkout`) {
+      router.replace(`${SLUG}/confirmation`);
+    }
+
+    if (!paid && pathname === `${SLUG}/confirmation`) {
+      router.replace(`${SLUG}/checkout`);
+    }
+  }, [registration, pathname, router]);
 
   useEffect(() => {
     if (
@@ -319,6 +388,41 @@ export default function CourseCheckoutPage() {
         err instanceof Error
           ? err.message
           : 'Unable to confirm registration',
+      );
+    } finally {
+      setWorking(false);
+    }
+  }
+
+  
+  async function checkPaymentNow() {
+    setWorking(true);
+
+    try {
+      const result = await courseApi(
+        'verify',
+        'POST',
+        {},
+      );
+
+      setRegistration(result);
+
+      if (
+        result.status === 'paid' ||
+        result.status === 'confirmed'
+      ) {
+        toast.success('Payment verified successfully!');
+        router.replace(`${SLUG}/confirmation`);
+      } else {
+        toast(
+          'Payment has not been verified yet. Please do not pay again.',
+        );
+      }
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : 'Payment verification failed',
       );
     } finally {
       setWorking(false);
@@ -702,7 +806,8 @@ export default function CourseCheckoutPage() {
                     )}
 
                     <button
-                      onClick={() => void refresh(true)}
+                      onClick={() => void checkPaymentNow()}
+                      disabled={working}
                       className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3.5 font-semibold text-slate-700 hover:bg-slate-50"
                     >
                       <HiOutlineArrowPath className="h-5 w-5" />
@@ -726,7 +831,7 @@ export default function CourseCheckoutPage() {
                       <div className="mt-5">
                         <DetailRow
                           label="Amount Paid"
-                          value="BDT 3,000"
+                          value={`BDT ${registration.amount.toLocaleString('en-BD')}`}
                         />
                         <DetailRow
                           label="Transaction ID"
@@ -837,9 +942,10 @@ export default function CourseCheckoutPage() {
                       </div>
 
                       <p className="mt-3 text-sm leading-7">
-                        Your BDT 3,000 payment was verified and
-                        your registration has been completed.
-                        Keep your registration ID for reference.
+                        Your BDT {registration.amount.toLocaleString('en-BD')}
+                        {' '}course payment was verified and your registration
+                        has been completed. Keep your registration ID
+                        for reference.
                       </p>
 
                       <DetailRow
@@ -924,6 +1030,7 @@ export default function CourseCheckoutPage() {
           )}
         </div>
       </div>
+      <PayFooter />
     </main>
   );
 }

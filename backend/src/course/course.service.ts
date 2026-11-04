@@ -597,19 +597,30 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
     return null;
   }
 
+
   async status(accessToken?: string) {
     let registration = await this.authorized(accessToken);
 
-    if (registration.status === 'pending') {
-      const age = Date.now() -
-        new Date(registration.lastVerifiedAt || 0).getTime();
+    if (
+      (registration.status === 'pending' ||
+        registration.status === 'initiating') &&
+      registration.invoiceNumber
+    ) {
+      const lastAttempt = new Date(
+        registration.lastVerifiedAt || 0,
+      ).getTime();
 
-      if (age > 12000) {
+      if (Date.now() - lastAttempt > 8000) {
         try {
           await this.verifyRegistration(registration);
           registration = await this.authorized(accessToken);
-        } catch {
-          // A temporary gateway outage must not mark a payment failed.
+        } catch (error) {
+          console.error('[Course Payment] Status check failed', {
+            invoice: registration.invoiceNumber,
+            message: error instanceof Error
+              ? error.message
+              : 'Unknown verification error',
+          });
         }
       }
     }
@@ -833,6 +844,7 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
+
   private async verifyRegistration(registration: CourseRecord) {
     if (
       registration.status === 'paid' ||
@@ -841,12 +853,23 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
       return;
     }
 
-    if (!registration.invoiceNumber) return;
+    if (!registration.invoiceNumber) {
+      return;
+    }
 
-    // Record the verification attempt to avoid hammering PayStation.
+    if (registration.environment !== this.environment()) {
+      throw new ServiceUnavailableException(
+        'Payment environment mismatch. Check PayStation configuration.',
+      );
+    }
+
     await this.records.updateOne(
       { _id: registration._id },
-      { $set: { lastVerifiedAt: new Date() } },
+      {
+        $set: {
+          lastVerifiedAt: new Date(),
+        },
+      },
     );
 
     const merchant = this.paymentCredentials();
@@ -856,49 +879,109 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
       new URLSearchParams({
         invoice_number: registration.invoiceNumber,
       }),
-      { merchantId: merchant.id },
+      {
+        merchantId: merchant.id,
+      },
     );
 
     if (
       String(result.status_code) !== '200' ||
-      String(result.status).toLowerCase() !== 'success'
+      String(result.status).trim().toLowerCase() !== 'success'
     ) {
+      console.warn('[Course Payment] Gateway lookup not successful', {
+        invoice: registration.invoiceNumber,
+        statusCode: result.status_code,
+        status: result.status,
+        message: result.message,
+      });
+
       return;
     }
 
     const data = result.data || {};
 
-    const gatewayStatus =
-      String(data.trx_status || '').toLowerCase();
+    const gatewayStatus = String(
+      data.trx_status || '',
+    ).trim().toLowerCase();
 
-    if (gatewayStatus !== 'success') return;
+    if (gatewayStatus !== 'success') {
+      console.info('[Course Payment] Not paid yet', {
+        invoice: registration.invoiceNumber,
+        gatewayStatus,
+      });
 
-    if (
-    String(data.invoice_number) !== registration.invoiceNumber ||
-    Number(data.payment_amount) !== registration.amount ||
-    !data.trx_id ||
-    (
-        data.reference &&
-        String(data.reference) !== COURSE_ID
-    )
-    ) {
-      throw new BadGatewayException(
-        'Gateway transaction details do not match this course registration',
-      );
+      return;
     }
 
-    const transactionId = String(data.trx_id);
+    const expectedAmount = registration.amount;
+    const receivedAmount = Number(data.payment_amount);
+
+    const hasRequestedAmount =
+      data.request_amount !== undefined &&
+      data.request_amount !== null &&
+      data.request_amount !== '';
+
+    const requestedAmount = hasRequestedAmount
+      ? Number(data.request_amount)
+      : null;
+
+    // The order amount must match if the gateway provides it.
+    // Customer-paid gateway fees may increase the collected total.
+    const amountValid =
+      Number.isFinite(receivedAmount) &&
+      receivedAmount >= expectedAmount &&
+      (
+        requestedAmount === null ||
+        requestedAmount === expectedAmount
+      );
+
+    const invoiceValid =
+      String(data.invoice_number) === registration.invoiceNumber;
+
+    const transactionId = String(data.trx_id || '').trim();
+
+    const transactionValid =
+      transactionId.length > 0 &&
+      transactionId !== '****';
+
+    const referenceValid =
+      !data.reference ||
+      String(data.reference) === COURSE_ID;
+
+    if (
+      !invoiceValid ||
+      !amountValid ||
+      !transactionValid ||
+      !referenceValid
+    ) {
+      console.error('[Course Payment] Verification mismatch', {
+        invoice: registration.invoiceNumber,
+        expectedAmount,
+        receivedAmount,
+        requestedAmount,
+        invoiceValid,
+        amountValid,
+        transactionValid,
+        referenceValid,
+        gatewayStatus,
+      });
+
+      throw new BadGatewayException(
+        'PayStation payment details do not match this registration',
+      );
+    }
 
     if (
       registration.transactionId &&
       registration.transactionId !== transactionId
     ) {
-      throw new ConflictException('Transaction ID mismatch');
+      throw new ConflictException(
+        'Payment transaction ID mismatch',
+      );
     }
 
-    // Atomic update: a duplicate callback cannot credit twice.
     try {
-      await this.records.updateOne(
+      const updated = await this.records.updateOne(
         {
           _id: registration._id,
           invoiceNumber: registration.invoiceNumber,
@@ -914,10 +997,18 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
           },
         },
       );
+
+      if (updated.modifiedCount === 1) {
+        console.info('[Course Payment] Successfully verified', {
+          invoice: registration.invoiceNumber,
+          courseAmount: expectedAmount,
+          gatewayAmount: receivedAmount,
+        });
+      }
     } catch (error: any) {
       if (error?.code === 11000) {
         throw new ConflictException(
-          'Gateway transaction already associated with another registration',
+          'This transaction is already associated with another registration',
         );
       }
 
@@ -958,7 +1049,7 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
 
     if (
         !Number.isFinite(Number(payload.trx_amount)) ||
-        Number(payload.trx_amount) !== registration.amount
+        Number(payload.trx_amount) < registration.amount
         ) {
         throw new BadRequestException('IPN amount mismatch');
     }
@@ -994,7 +1085,17 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
   }
 
   async callback(invoice?: string) {
-    if (invoice && /^[A-Za-z0-9_-]{10,100}$/.test(invoice)) {
+    const frontend = (
+      process.env.COURSE_FRONTEND_PUBLIC_URL ||
+      'https://workshop.researchustad.org'
+    ).replace(/\/$/, '');
+
+    let paymentVerified = false;
+
+    if (
+      invoice &&
+      /^[A-Za-z0-9_-]{10,100}$/.test(invoice)
+    ) {
       const registration = await this.records.findOne({
         invoiceNumber: invoice,
         courseId: COURSE_ID,
@@ -1004,18 +1105,33 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
       if (registration) {
         try {
           await this.verifyRegistration(registration);
-        } catch {
-          // A later status check/IPN can complete reconciliation.
+
+          const updated = await this.records.findOne({
+            _id: registration._id,
+          });
+
+          paymentVerified =
+            updated?.status === 'paid' ||
+            updated?.status === 'confirmed';
+        } catch (error) {
+          console.error('[Course Payment] Callback verification failed', {
+            invoice,
+            message: error instanceof Error
+              ? error.message
+              : 'Unknown verification error',
+          });
         }
       }
     }
 
-    const frontend = (
-      process.env.COURSE_FRONTEND_PUBLIC_URL ||
-      'https://workshop.researchustad.org'
-    ).replace(/\/$/, '');
+    if (paymentVerified) {
+      return `${frontend}/${COURSE_SLUG}/confirmation`;
+    }
 
-    return `${frontend}/${COURSE_SLUG}/checkout`;
+    // Callback may omit the invoice or arrive before gateway
+    // settlement status is available. The browser will verify
+    // its own authenticated registration on return.
+    return `${frontend}/${COURSE_SLUG}/checkout?payment_return=1`;
   }
 
   private normalizePhone(value: string) {
