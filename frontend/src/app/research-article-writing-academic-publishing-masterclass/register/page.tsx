@@ -263,6 +263,114 @@ async function onSubmit(data: RegistrationSchemaType) {
     </p>
   );
 
+  // frontend/src/app/research-article-writing-academic-publishing-masterclass/register/page.tsx
+
+  if (resumeEmail) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 px-4 py-12">
+        <div className="w-full max-w-lg overflow-hidden rounded-3xl border border-white/15 bg-white shadow-2xl">
+          <div className="bg-indigo-700 px-8 py-10 text-center text-white">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-white/15">
+              <HiOutlineShieldCheck className="h-9 w-9" />
+            </div>
+
+            <p className="mt-5 text-sm font-medium uppercase tracking-widest text-indigo-200">
+              Research Ustad · Course 01
+            </p>
+
+            <h1 className="mt-3 font-display text-2xl font-extrabold sm:text-3xl">
+              Resume Your Registration
+            </h1>
+
+            <p className="mt-3 text-sm leading-7 text-indigo-100">
+              This email has an existing registration.
+              Verify your identity to securely continue.
+            </p>
+          </div>
+
+          <div className="space-y-6 p-7 sm:p-9">
+            <div className="rounded-xl border border-indigo-100 bg-indigo-50 p-4 text-center">
+              <p className="text-xs font-semibold uppercase tracking-wider text-indigo-600">
+                Verification Email
+              </p>
+
+              <p className="mt-2 break-all font-bold text-indigo-950">
+                {resumeEmail}
+              </p>
+
+              <p className="mt-2 text-xs leading-6 text-slate-500">
+                Enter the six-digit code sent to your inbox.
+                The code expires after 10 minutes.
+              </p>
+            </div>
+
+            <div>
+              <label
+                htmlFor="courseResumeOtp"
+                className="mb-2 block text-sm font-semibold text-slate-700"
+              >
+                Six-Digit Verification Code
+              </label>
+
+              <input
+                id="courseResumeOtp"
+                type="text"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                maxLength={6}
+                value={resumeOtp}
+                onChange={(event) =>
+                  setResumeOtp(
+                    event.target.value.replace(/\D/g, '').slice(0, 6),
+                  )
+                }
+                placeholder="000000"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-5 py-4 text-center text-2xl font-bold tracking-[0.5em] text-indigo-950 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
+              />
+            </div>
+
+            <button
+              type="button"
+              onClick={() => void verifyResumeOtp()}
+              disabled={resumeLoading || resumeOtp.length !== 6}
+              className="flex w-full items-center justify-center gap-3 rounded-xl bg-indigo-600 px-6 py-4 font-bold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+            >
+              {resumeLoading
+                ? 'Verifying...'
+                : 'Verify & Continue to Preview'}
+
+              {!resumeLoading && (
+                <HiOutlineArrowRight className="h-5 w-5" />
+              )}
+            </button>
+
+            <button
+              type="button"
+              disabled={resumeLoading}
+              onClick={() => void requestResumeOtp(resumeEmail)}
+              className="w-full text-center text-sm font-semibold text-indigo-600 hover:underline disabled:opacity-50"
+            >
+              Resend Verification Code
+            </button>
+
+            <div className="border-t border-slate-100 pt-5 text-center">
+              <button
+                type="button"
+                onClick={() => {
+                  setResumeEmail('');
+                  setResumeOtp('');
+                }}
+                className="text-sm font-medium text-slate-500 hover:text-indigo-600"
+              >
+                Back to Registration Form
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-[#f5f7fc] text-slate-900">
       <header className="border-b bg-white">
