@@ -10,6 +10,7 @@ import {
 } from 'react-icons/fi';
 
 import { io } from 'socket.io-client';
+import adminApi from '@/lib/adminApi';
 
 const PAGE_SIZE = 20;
 
@@ -244,19 +245,44 @@ function CourseParticipantsDashboard() {
     return () => window.clearTimeout(timer);
   }, [search]);
 
-  const requestPage = useCallback(async (n: number, signal?: AbortSignal): Promise<ApiResponse> => {
-    const query = new URLSearchParams({
-      page: String(n), limit: String(PAGE_SIZE), search: debouncedSearch, status,
-    });
-    const response = await fetch(`/api/course/admin/participants?${query}`, {
-      cache: 'no-store', credentials: 'same-origin', signal,
-    });
-    if (!response.ok) {
-      if (response.status === 401 || response.status === 403) throw new Error('Admin session expired. Please sign in again.');
-      throw new Error(`Unable to load participants (HTTP ${response.status}).`);
-    }
-    return response.json();
-  }, [debouncedSearch, status]);
+
+  const requestPage = useCallback(
+    async (
+      n: number,
+      signal?: AbortSignal,
+    ): Promise<ApiResponse> => {
+      try {
+        const response = await adminApi.get<ApiResponse>(
+          '/course/admin/participants',
+          {
+            params: {
+              page: n,
+              limit: PAGE_SIZE,
+              search: debouncedSearch,
+              status,
+            },
+            signal,
+          },
+        );
+
+        return response.data;
+      } catch (error) {
+        const code = (
+          error as { response?: { status?: number } }
+        )?.response?.status;
+
+        if (code === 401 || code === 403) {
+          throw new Error(
+            'Admin session expired. Please sign in again.',
+          );
+        }
+
+        throw error;
+      }
+    },
+    [debouncedSearch, status],
+  );
+
 
   useEffect(() => {
     const ticket = ++generation.current;
@@ -421,12 +447,26 @@ function CourseParticipantsDashboard() {
       withCredentials: true,
     });
 
+  
     function onConnect() {
       if (stopped) return;
 
+      // Connected at transport level, but waiting
+      // for backend authentication confirmation.
+      setLiveConnected(false);
+    }
+
+    function onCourseReady() {
+      if (stopped) return;
+
+      // Backend has authenticated the admin
+      // and joined the private Socket.IO room.
       setLiveConnected(true);
+
+      // Fetch any changes missed before joining.
       scheduleRefresh();
     }
+
 
     function onDisconnect() {
       if (stopped) return;
@@ -450,6 +490,7 @@ function CourseParticipantsDashboard() {
     }
 
     socket.on('connect', onConnect);
+    socket.on('course:ready', onCourseReady);
     socket.on('disconnect', onDisconnect);
     socket.on('connect_error', onConnectError);
 
@@ -472,6 +513,7 @@ function CourseParticipantsDashboard() {
       window.clearInterval(fallbackTimer);
 
       socket.off('connect', onConnect);
+      socket.off('course:ready', onCourseReady);
       socket.off('disconnect', onDisconnect);
       socket.off('connect_error', onConnectError);
 
@@ -528,8 +570,8 @@ function CourseParticipantsDashboard() {
             />
 
             {liveConnected
-              ? 'Live updates connected'
-              : 'Reconnecting · Auto sync'}
+            ? 'Live updates connected'
+            : 'Live unavailable · Auto sync'}
           </div>
           <div className="flex shrink-0 gap-2">
             <Link href="/admin" className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2.5 text-sm font-bold hover:bg-white/20"><FiArrowLeft /> <span className="hidden sm:inline">Admin</span></Link>

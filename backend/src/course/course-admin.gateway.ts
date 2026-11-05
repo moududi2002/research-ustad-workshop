@@ -95,11 +95,19 @@ export class CourseAdminGateway
         return;
       }
 
-      await client.join(ADMIN_ROOM);
+    
+        await client.join(ADMIN_ROOM);
 
-      console.log(
+        // Notify the browser only after admin authentication
+        // and private-room membership are complete.
+        client.emit('course:ready', {
+        authenticated: true,
+        });
+
+        console.log(
         '[Course WS] Authorized admin connected',
-      );
+        );
+
     } catch {
       client.disconnect(true);
     }

@@ -1273,21 +1273,25 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
     ) {
         // Explicit rejection: allow retry with a new invoice.
         // Unknown network outcomes are handled separately.
-        await this.records.updateOne(
-                {
-                _id: registration._id,
-                status: 'initiating',
-                },
-                {
-                $set: {
-                    status: 'draft',
-                    updatedAt: new Date(),
-                },
-                $unset: {
-                    invoiceNumber: '',
-                },
+        const resetResult = await this.records.updateOne(
+          {
+            _id: registration._id,
+            status: 'initiating',
+          },
+          {
+            $set: {
+              status: 'draft',
+              updatedAt: new Date(),
             },
+            $unset: {
+              invoiceNumber: '',
+            },
+          },
         );
+
+        if (resetResult.modifiedCount === 1) {
+          this.courseRealtime.notifyChange();
+        }
         
 
         throw new BadGatewayException(
@@ -1318,11 +1322,16 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
         invoiceNumber,
         paymentUrl: result.payment_url,
       };
+    
     } catch (error) {
-      // Keep the invoice for support/reconciliation if gateway
-      // created a payment but its response was interrupted.
-      await this.records.updateOne(
-        { _id: registration._id, status: 'initiating' },
+      // Keep invoice for reconciliation if gateway
+      // created payment but its response was interrupted.
+
+      const recoveryResult = await this.records.updateOne(
+        {
+          _id: registration._id,
+          status: 'initiating',
+        },
         {
           $set: {
             status: 'pending',
@@ -1331,8 +1340,13 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
         },
       );
 
+      if (recoveryResult.modifiedCount === 1) {
+        this.courseRealtime.notifyChange();
+      }
+
       throw error;
     }
+
   }
 
 
@@ -1489,17 +1503,16 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
         },
       );
 
-    if (updated.modifiedCount === 1) {
-      this.courseRealtime.notifyChange();
 
       if (updated.modifiedCount === 1) {
+        this.courseRealtime.notifyChange();
         console.info('[Course Payment] Successfully verified', {
           invoice: registration.invoiceNumber,
           courseAmount: expectedAmount,
           gatewayAmount: receivedAmount,
         });
       }
-    }
+    
     
   } catch (error: any) {
       if (error?.code === 11000) {
