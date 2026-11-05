@@ -22,6 +22,8 @@ import {
 import * as nodemailer from 'nodemailer';
 import { CourseRegistrationDto } from './dto/course-registration.dto';
 
+import { CourseAdminGateway } from './course-admin.gateway';
+
 const COURSE_ID = 'research-article-writing-01';
 const COURSE_SLUG =
   'research-article-writing-academic-publishing-guidelines';
@@ -119,6 +121,9 @@ interface CourseCoupon {
 
 @Injectable()
 export class CourseService implements OnModuleInit, OnModuleDestroy {
+  constructor(
+  private readonly courseRealtime: CourseAdminGateway,
+  ) {}
   private mongo: MongoClient;
   private records: Collection<CourseRecord>;
   private coupons: Collection<CourseCoupon>;
@@ -534,6 +539,7 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
       );
     }
 
+    this.courseRealtime.notifyChange();
     return this.safeRecord(updated);
   }
 
@@ -564,6 +570,7 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
       );
     }
 
+    this.courseRealtime.notifyChange();
     return this.safeRecord(updated);
   }
 
@@ -664,6 +671,7 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
 
     try {
       await this.records.insertOne(record);
+      this.courseRealtime.notifyChange();
     } catch (error: any) {
       if (error?.code === 11000) {
         throw new ConflictException(
@@ -1112,6 +1120,16 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
       );
     }
 
+     if (
+      registration.status === 'pending' &&
+      registration.paymentUrl
+    ) {
+      return {
+        invoiceNumber: registration.invoiceNumber,
+        paymentUrl: registration.paymentUrl,
+      };
+    }
+
     if (registration.status !== 'draft') {
       throw new ConflictException(
         'Payment initiation is already in progress',
@@ -1210,6 +1228,8 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
       throw new ConflictException('Payment already started');
     }
 
+    this.courseRealtime.notifyChange();
+
     try {
       const { id, password } = this.paymentCredentials();
 
@@ -1268,22 +1288,31 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
                 },
             },
         );
+        
 
         throw new BadGatewayException(
             'PayStation rejected payment initiation. Please try again.',
         );
         }
 
-      await this.records.updateOne(
-        { _id: registration._id, status: 'initiating' },
-        {
-          $set: {
-            status: 'pending',
-            paymentUrl: result.payment_url,
-            updatedAt: new Date(),
+
+        const pendingUpdate = await this.records.updateOne(
+          {
+            _id: registration._id,
+            status: 'initiating',
           },
-        },
-      );
+          {
+            $set: {
+              status: 'pending',
+              paymentUrl: result.payment_url,
+              updatedAt: new Date(),
+            },
+          },
+        );
+
+        if (pendingUpdate.modifiedCount === 1) {
+          this.courseRealtime.notifyChange();
+        }
 
       return {
         invoiceNumber,
@@ -1460,6 +1489,9 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
         },
       );
 
+    if (updated.modifiedCount === 1) {
+      this.courseRealtime.notifyChange();
+
       if (updated.modifiedCount === 1) {
         console.info('[Course Payment] Successfully verified', {
           invoice: registration.invoiceNumber,
@@ -1467,7 +1499,9 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
           gatewayAmount: receivedAmount,
         });
       }
-    } catch (error: any) {
+    }
+    
+  } catch (error: any) {
       if (error?.code === 11000) {
         throw new ConflictException(
           'This transaction is already associated with another registration',
@@ -1728,6 +1762,7 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
     );
 
     if (!claim) return;
+    this.courseRealtime.notifyChange();
 
     try {
       if (channel === 'email') {
@@ -1744,6 +1779,7 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
           },
         },
       );
+      this.courseRealtime.notifyChange();
     } catch {
       await this.records.updateOne(
         { _id: registration._id },
@@ -1753,6 +1789,7 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
           },
         },
       );
+      this.courseRealtime.notifyChange();
     }
   }
 
@@ -1777,7 +1814,7 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
         );
       }
 
-      await this.records.updateOne(
+      const confirmationUpdate = await this.records.updateOne(
         { _id: registration._id, status: 'paid' },
         {
           $set: {
@@ -1788,6 +1825,10 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
           },
         },
       );
+
+      if (confirmationUpdate.modifiedCount === 1) {
+        this.courseRealtime.notifyChange();
+      }
     }
 
     const confirmed = await this.authorized(accessToken);

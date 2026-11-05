@@ -9,6 +9,8 @@ import {
   FiDownload, FiFilter,
 } from 'react-icons/fi';
 
+import { io } from 'socket.io-client';
+
 const PAGE_SIZE = 20;
 
 type RegistrationStatus = 'draft' | 'initiating' | 'pending' | 'paid' | 'confirmed';
@@ -231,6 +233,12 @@ function CourseParticipantsDashboard() {
   const loadingMoreLock = useRef(false);
   const scrollBox = useRef<HTMLDivElement>(null);
 
+  const [liveConnected, setLiveConnected] = useState(false);
+
+  const liveRefreshRef = useRef<() => Promise<void>>(
+    async () => {},
+  );
+
   useEffect(() => {
     const timer = window.setTimeout(() => setDebouncedSearch(search.trim()), 350);
     return () => window.clearTimeout(timer);
@@ -298,6 +306,183 @@ function CourseParticipantsDashboard() {
     }
   }, [loading, rows.length, total, page, requestPage]);
 
+
+    const refreshLiveRecords = useCallback(async () => {
+      if (page < 1) return;
+
+      const ticket = generation.current;
+      const loadedPages = page;
+
+      try {
+        // Refresh every currently loaded 20-row page.
+        // This preserves the internal table's scroll position.
+        const results = await Promise.all(
+          Array.from(
+            { length: loadedPages },
+            (_, index) => requestPage(index + 1),
+          ),
+        );
+
+        if (ticket !== generation.current) return;
+
+        const unique = new Map<string, Participant>();
+
+        for (const result of results) {
+          for (const participant of result.rows) {
+            unique.set(participant.id, participant);
+          }
+        }
+
+        const updatedRows = Array.from(unique.values());
+
+        setRows(updatedRows);
+
+        if (results.length > 0) {
+          setTotal(results[0].total);
+          setOverview(results[0].overview);
+        }
+
+        // Keep an opened detail modal synchronized.
+        setSelected((current) => {
+          if (!current) return null;
+
+          return (
+            updatedRows.find((row) => row.id === current.id) ||
+            null
+          );
+        });
+
+        setError('');
+      } catch (error) {
+        if (ticket !== generation.current) return;
+
+        setError(
+          error instanceof Error
+            ? error.message
+            : 'Live refresh failed',
+        );
+      }
+    }, [page, requestPage]);
+
+    useEffect(() => {
+      liveRefreshRef.current = refreshLiveRecords;
+    }, [refreshLiveRecords]);
+
+
+  useEffect(() => {
+    let stopped = false;
+    let running = false;
+    let rerun = false;
+
+    let refreshTimer: ReturnType<typeof setTimeout> | null =
+      null;
+
+    function scheduleRefresh() {
+      if (stopped) return;
+
+      if (refreshTimer) {
+        clearTimeout(refreshTimer);
+      }
+
+      refreshTimer = setTimeout(() => {
+        void runRefresh();
+      }, 300);
+    }
+
+    async function runRefresh() {
+      if (stopped) return;
+
+      if (running) {
+        rerun = true;
+        return;
+      }
+
+      running = true;
+
+      try {
+        await liveRefreshRef.current();
+      } finally {
+        running = false;
+
+        if (!stopped && rerun) {
+          rerun = false;
+          scheduleRefresh();
+        }
+      }
+    }
+
+    const socket = io('/course-admin', {
+      path: '/socket.io',
+      transports: ['websocket'],
+      autoConnect: false,
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      withCredentials: true,
+    });
+
+    function onConnect() {
+      if (stopped) return;
+
+      setLiveConnected(true);
+      scheduleRefresh();
+    }
+
+    function onDisconnect() {
+      if (stopped) return;
+
+      setLiveConnected(false);
+    }
+
+    function onConnectError(error: Error) {
+      if (stopped) return;
+
+      setLiveConnected(false);
+
+      console.warn(
+        '[Course Dashboard] WebSocket:',
+        error.message,
+      );
+    }
+
+    function onCourseChanged() {
+      scheduleRefresh();
+    }
+
+    socket.on('connect', onConnect);
+    socket.on('disconnect', onDisconnect);
+    socket.on('connect_error', onConnectError);
+
+    socket.on('course:changed', onCourseChanged);
+
+    socket.connect();
+
+    // Reconcile occasionally in case an event was missed.
+    const fallbackTimer = window.setInterval(() => {
+      scheduleRefresh();
+    }, 60000);
+
+    return () => {
+      stopped = true;
+
+      if (refreshTimer) {
+        clearTimeout(refreshTimer);
+      }
+
+      window.clearInterval(fallbackTimer);
+
+      socket.off('connect', onConnect);
+      socket.off('disconnect', onDisconnect);
+      socket.off('connect_error', onConnectError);
+
+      socket.off('course:changed', onCourseChanged);
+
+      socket.disconnect();
+    };
+  }, []);
+
+
+
   function onTableScroll(event: React.UIEvent<HTMLDivElement>) {
     const el = event.currentTarget;
     if (el.scrollHeight - el.scrollTop - el.clientHeight < 220) void fetchNextPage();
@@ -332,6 +517,19 @@ function CourseParticipantsDashboard() {
           <div className="min-w-0">
             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-indigo-200"><FiUsers /> Research Ustad · Course 01</div>
             <h1 className="mt-1 truncate text-xl font-extrabold sm:text-2xl">Course Participant Management</h1>
+          </div>
+          <div className="hidden items-center gap-2 text-xs font-semibold text-indigo-100 md:flex">
+            <span
+              className={`h-2.5 w-2.5 rounded-full ${
+                liveConnected
+                  ? 'bg-emerald-400'
+                  : 'bg-amber-400'
+              }`}
+            />
+
+            {liveConnected
+              ? 'Live updates connected'
+              : 'Reconnecting · Auto sync'}
           </div>
           <div className="flex shrink-0 gap-2">
             <Link href="/admin" className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2.5 text-sm font-bold hover:bg-white/20"><FiArrowLeft /> <span className="hidden sm:inline">Admin</span></Link>

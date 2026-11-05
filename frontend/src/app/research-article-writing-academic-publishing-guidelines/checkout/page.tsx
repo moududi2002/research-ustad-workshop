@@ -386,7 +386,7 @@ const [acceptedRefundPolicy, setAcceptedRefundPolicy] =
   }
 
 
-    async function proceedToPayment() {
+  async function proceedToPayment() {
     const needsAcceptance = registration?.status === 'draft';
 
     if (
