@@ -158,7 +158,7 @@ function ParticipantDetails({ participant, onClose }: {
         className="flex max-h-[90dvh] w-full max-w-3xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl">
         <div className="flex shrink-0 items-start justify-between gap-4 bg-gradient-to-r from-indigo-950 to-indigo-700 p-6 text-white">
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-indigo-200">Course 01 Participant</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-indigo-200">Batch 01 Participant</p>
             <h2 id="participant-dialog-title" className="mt-2 text-2xl font-extrabold">{p.fullName}</h2>
             <p className="mt-1 break-all text-sm text-indigo-100">{p.registrationId}</p>
           </div>
@@ -557,7 +557,7 @@ function CourseParticipantsDashboard() {
       <header className="shrink-0 bg-gradient-to-r from-slate-950 via-indigo-950 to-indigo-800 px-4 py-4 text-white sm:px-7">
         <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-4">
           <div className="min-w-0">
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-indigo-200"><FiUsers /> Research Ustad · Course 01</div>
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-indigo-200"><FiUsers /> Research Ustad · Batch 01</div>
             <h1 className="mt-1 truncate text-xl font-extrabold sm:text-2xl">Course Participant Management</h1>
           </div>
           <div className="hidden items-center gap-2 text-xs font-semibold text-indigo-100 md:flex">

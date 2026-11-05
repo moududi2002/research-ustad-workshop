@@ -142,7 +142,7 @@ function CouponManager() {
         <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
           <div>
             <p className="text-xs font-bold uppercase tracking-widest text-indigo-600">
-              Research Ustad · Course 01
+              Research Ustad · Batch 01
             </p>
 
             <h1 className="mt-2 text-3xl font-extrabold">

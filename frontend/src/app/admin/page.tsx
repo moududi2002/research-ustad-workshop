@@ -183,7 +183,7 @@ function AdminDashboard() {
             </div>
             <div className="flex flex-wrap gap-3">
 
-            {/* Course 01 Participants Dashboard */}
+            {/* Batch 01 Participants Dashboard */}
             <button
               type="button"
               onClick={() =>

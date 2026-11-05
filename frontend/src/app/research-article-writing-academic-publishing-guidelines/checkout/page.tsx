@@ -627,7 +627,7 @@ const [acceptedRefundPolicy, setAcceptedRefundPolicy] =
                 {/* Course title */}
                 <section>
                   <p className="text-xs font-bold uppercase tracking-widest text-indigo-600">
-                    Course 01
+                   Batch 01
                   </p>
 
                   <h2 className="mt-2 text-xl font-bold leading-8">
@@ -1088,7 +1088,7 @@ const [acceptedRefundPolicy, setAcceptedRefundPolicy] =
 
                         <span className="text-sm font-medium leading-7 text-slate-700">
                           I have read and accept the Terms and
-                          Conditions of Research Ustad Course 01.
+                          Conditions of Research Ustad Batch 01.
                         </span>
                       </label>
 
@@ -1193,36 +1193,38 @@ const [acceptedRefundPolicy, setAcceptedRefundPolicy] =
                         </p>
                       </div>
                     </div>
+
+                    <div className="border-t border-slate-100 pt-6 text-center">
+                        <Link
+                          href={SLUG}
+                          className="text-sm font-semibold text-indigo-600 hover:underline"
+                        >
+                          View Full Course Curriculum
+                        </Link>
+                      </div>
+
+                    {/* Confirmation Actions */}
+                      <div className="grid gap-4 border-t border-slate-100 pt-6 sm:grid-cols-2">
+                        <Link
+                          href={SLUG}
+                          className="flex items-center justify-center rounded-xl bg-indigo-600 px-6 py-4 text-center font-bold text-white transition hover:bg-indigo-700"
+                        >
+                          Back to Home
+                        </Link>
+
+                        <a
+                          href="https://researchustad.org"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-center rounded-xl border-2 border-indigo-200 bg-white px-6 py-4 text-center font-bold text-indigo-700 transition hover:border-indigo-400 hover:bg-indigo-50"
+                        >
+                          Visit Research Ustad
+                        </a>
+                      </div>
                   </section>
                 )}
 
-                {/* Confirmation Actions */}
-                <div className="grid gap-4 border-t border-slate-100 pt-6 sm:grid-cols-2">
-                  <Link
-                    href={SLUG}
-                    className="flex items-center justify-center rounded-xl bg-indigo-600 px-6 py-4 text-center font-bold text-white transition hover:bg-indigo-700"
-                  >
-                    Back to Home
-                  </Link>
-
-                  <a
-                    href="https://researchustad.org"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center rounded-xl border-2 border-indigo-200 bg-white px-6 py-4 text-center font-bold text-indigo-700 transition hover:border-indigo-400 hover:bg-indigo-50"
-                  >
-                    Visit Research Ustad
-                  </a>
-                </div>
-
-                <div className="border-t border-slate-100 pt-6 text-center">
-                  <Link
-                    href={SLUG}
-                    className="text-sm font-semibold text-indigo-600 hover:underline"
-                  >
-                    View Full Course Curriculum
-                  </Link>
-                </div>
+                
               </div>
             </div>
           )}

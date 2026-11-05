@@ -87,7 +87,7 @@ export default function CourseDetailsPage() {
           <div className="lg:col-span-8">
             <span className="inline-flex items-center gap-2 rounded-full border border-primary-200 bg-white px-4 py-1.5 text-xs font-semibold text-primary-700 shadow-sm">
               <HiOutlineSparkles className="h-4 w-4" />
-              Course 01 · Live Online Learning
+              Batch 01 · Live Online Learning
             </span>
 
             <h1 className="mt-7 max-w-4xl font-display text-4xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">

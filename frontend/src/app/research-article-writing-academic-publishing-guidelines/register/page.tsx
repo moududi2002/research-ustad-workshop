@@ -270,7 +270,7 @@ export default function CourseRegistrationPage() {
             </div>
 
             <p className="mt-5 text-sm font-medium uppercase tracking-widest text-indigo-200">
-              Research Ustad · Course 01
+              Research Ustad · Batch 01
             </p>
 
             <h1 className="mt-3 font-display text-2xl font-extrabold sm:text-3xl">
@@ -399,7 +399,7 @@ export default function CourseRegistrationPage() {
       <div className="container-custom py-12">
         <div className="mb-10">
           <p className="text-sm font-bold uppercase tracking-wider text-indigo-600">
-            Course 01 · Step 1 of 3
+            Batch 01 · Step 1 of 3
           </p>
 
           <h1 className="mt-3 font-display text-3xl font-extrabold sm:text-4xl">

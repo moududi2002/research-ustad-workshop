@@ -145,6 +145,30 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
     return createHash('sha256').update(value).digest('hex');
   }
 
+  private async generateTemporaryRegistrationId(): Promise<string> {
+    const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+
+    for (let attempt = 0; attempt < 10; attempt++) {
+      const temporaryId = Array.from(
+        { length: 8 },
+        () => alphabet[randomInt(alphabet.length)],
+      ).join('');
+
+      const existing = await this.records.findOne({
+        registrationId: temporaryId,
+      });
+
+      if (!existing) {
+        return temporaryId;
+      }
+    }
+
+    throw new ServiceUnavailableException(
+      'Unable to generate a temporary registration ID',
+    );
+  }
+
+
   private describeRegistrationDevice(input?: {
     userAgent?: string;
     network?: string;
@@ -598,44 +622,16 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
 
     if (existing) {
       throw new ConflictException(
-        'This email already has a Course 01 registration. Use your original browser session to resume.',
+        'This email already has Batch 01 registration. Use your original browser session to resume.',
       );
     }
 
     const accessToken = randomBytes(32).toString('hex');
 
-    // Bangladesh local year: 2026 -> 26, 2027 -> 27
-    const year = new Intl.DateTimeFormat('en-GB', {
-      timeZone: 'Asia/Dhaka',
-      year: 'numeric',
-    }).format(new Date()).slice(-2);
-
-    // Separate counter for each year
-    const counterId = `RU-C01/${year}`;
-
-    const counter = await this.counters.findOneAndUpdate(
-      { _id: counterId },
-      {
-        $inc: {
-          seq: 1,
-        },
-      },
-      {
-        upsert: true,
-        returnDocument: 'after',
-      },
-    );
-
-    if (!counter) {
-      throw new ServiceUnavailableException(
-        'Unable to generate registration ID',
-      );
-    }
-
-    // Serial numbers: 0001, 0002, 0003...
-    const serial = String(counter.seq).padStart(4, '0');
-
-    const registrationId = `RU-RAP01-${serial}`;
+    // Temporary ID only.
+    // Official registration serial will be assigned after verified payment.
+    const registrationId =
+    await this.generateTemporaryRegistrationId();
 
     const now = new Date();
 
@@ -1236,7 +1232,7 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
         payment_amount: String(registration.amount),
         pay_with_charge: '1',
         reference: COURSE_ID,
-        checkout_items: 'Course 01 - Research Publishing Guidelines',
+        checkout_items: 'Batch 01 - Research Publishing Guidelines',
         cust_name: registration.fullName,
         cust_email: registration.email,
         cust_phone: registration.whatsapp,
@@ -1672,28 +1668,257 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
     const whatsapp = this.getWhatsappGroupUrl();
 
     const groupHtml = whatsapp
-      ? `<p><a href="${whatsapp}">Join the Course WhatsApp Group</a></p>`
-      : '<p>Group joining details will be shared separately.</p>';
+    ? `
+      <div style="
+        background:#ecfdf5;
+        border:2px solid #6ee7b7;
+        border-radius:14px;
+        padding:28px 22px;
+        margin:25px 0;
+        text-align:center;
+      ">
+
+        <div style="
+          font-size:38px;
+          line-height:1;
+          margin-bottom:14px;
+        ">
+          💬
+        </div>
+
+        <h3 style="
+          margin:0;
+          color:#064e3b;
+          font-size:19px;
+          font-weight:700;
+          line-height:27px;
+        ">
+          Join Your Official Course WhatsApp Group
+        </h3>
+
+        <p style="
+          margin:12px 0 22px;
+          color:#065f46;
+          font-size:14px;
+          line-height:24px;
+        ">
+          Stay connected with course announcements,
+          class updates and the learning community.
+        </p>
+
+        <a
+          href="${this.escapeHtml(whatsapp)}"
+          target="_blank"
+          style="
+            display:inline-block;
+            background:#059669;
+            color:#ffffff;
+            padding:14px 26px;
+            border-radius:9px;
+            font-size:14px;
+            font-weight:700;
+            text-decoration:none;
+          "
+        >
+          Join WhatsApp Group &nbsp; →
+        </a>
+
+      </div>
+    `
+    : `
+      <div style="
+        background:#f8fafc;
+        border:1px solid #e2e8f0;
+        border-radius:10px;
+        padding:20px;
+        margin:25px 0;
+        text-align:center;
+      ">
+        <div style="font-size:32px;margin-bottom:10px;">💬</div>
+
+        <h3 style="
+          margin:0 0 8px;
+          color:#334155;
+          font-size:17px;
+          font-weight:700;
+        ">
+          Course WhatsApp Group
+        </h3>
+
+        <p style="
+          margin:0;
+          color:#64748b;
+          font-size:14px;
+          line-height:23px;
+        ">
+          Group joining details will be shared separately.
+          Please check your email for future updates.
+        </p>
+      </div>
+    `;
 
     await transporter.sendMail({
       from: `"Research Ustad" <${user}>`,
       to: registration.email,
-      subject: 'Course 01 Registration Confirmed — Research Ustad',
-      html: `
-        <div style="font-family:Arial,sans-serif;max-width:620px;margin:auto;padding:30px;color:#17213b">
-          <h1 style="color:#2546a8">Registration Confirmed</h1>
-          <p>Dear ${this.escapeHtml(registration.fullName)},</p>
-          <p>Your payment has been verified and your registration is confirmed.</p>
-          <h2>Research Article Writing &amp; Academic Publishing Guidelines</h2>
-          <p><strong>Registration ID:</strong> ${this.escapeHtml(registration.registrationId)}</p>
-          <p><strong>Transaction ID:</strong> ${this.escapeHtml(registration.transactionId)}</p>
-          <p><strong>Amount Paid:</strong> BDT ${registration.amount}</p>
-          <p><strong>Format:</strong> 24 live classes · 8 modules · practical assignments</p>
-          ${groupHtml}
-          <p>Please keep this email for your records. The course schedule and joining instructions will be communicated separately.</p>
-          <p>Regards,<br><strong>Research Ustad Team</strong></p>
-        </div>
-      `,
+      subject: 'Research Article Writing &  Publishing : Batch-01 Registration Confirmed — Research Ustad',
+        html: `
+          <div style="margin:0;padding:35px 12px;background-color:#f3f5f9;font-family:Arial,Helvetica,sans-serif;color:#263247;">
+
+            <div style="max-width:620px;margin:0 auto;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e5e9f0;">
+
+              <!-- Header -->
+              <div style="background:#173b8f;padding:32px 30px;text-align:center;">
+                <h1 style="margin:0;color:#ffffff;font-size:25px;font-weight:700;letter-spacing:0.3px;">
+                  Registration Confirmed!
+                </h1>
+                <p style="margin:10px 0 0;color:#dce7ff;font-size:14px;line-height:22px;">
+                  Your payment has been successfully verified.
+                </p>
+              </div>
+
+              <!-- Main Content -->
+              <div style="padding:32px 30px;">
+
+                <p style="margin:0 0 18px;font-size:16px;line-height:26px;">
+                  Dear <strong>${this.escapeHtml(registration.fullName)}</strong>,
+                </p>
+
+                <p style="margin:0 0 22px;font-size:15px;line-height:25px;color:#4b5563;">
+                  Congratulations! We are pleased to confirm that your payment has been verified and your registration for the following course is now officially confirmed.
+                </p>
+
+                <!-- Course Information -->
+                <div style="background:#f5f7fc;border-left:4px solid #2546a8;padding:20px 20px;margin:0 0 24px;border-radius:5px;">
+                  <p style="margin:0 0 8px;color:#64748b;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">
+                    COURSE ENROLLMENT
+                  </p>
+                  <h2 style="margin:0;color:#173b8f;font-size:19px;line-height:28px;font-weight:700;">
+                    Research Article Writing &amp; Academic Publishing Guidelines
+                  </h2>
+                  <p style="margin:10px 0 0;color:#526078;font-size:13px;line-height:22px;">
+                    Batch 01
+                  </p>
+                </div>
+
+                <!-- Payment Details -->
+                <h3 style="margin:0 0 14px;color:#17213b;font-size:17px;font-weight:700;">
+                  Registration &amp; Payment Details
+                </h3>
+
+                <table style="width:100%;border-collapse:collapse;margin-bottom:24px;font-size:14px;">
+                  <tr>
+                    <td style="padding:13px 12px;background:#f8fafc;border-bottom:1px solid #e8edf3;color:#64748b;width:42%;">
+                      Registration ID
+                    </td>
+                    <td style="padding:13px 12px;background:#f8fafc;border-bottom:1px solid #e8edf3;color:#17213b;font-weight:700;">
+                      ${this.escapeHtml(registration.registrationId)}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:13px 12px;border-bottom:1px solid #e8edf3;color:#64748b;">
+                      Transaction ID
+                    </td>
+                    <td style="padding:13px 12px;border-bottom:1px solid #e8edf3;color:#17213b;font-weight:600;word-break:break-word;">
+                      ${this.escapeHtml(registration.transactionId)}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:13px 12px;background:#f8fafc;color:#64748b;">
+                      Amount Paid
+                    </td>
+                    <td style="padding:13px 12px;background:#f8fafc;color:#15803d;font-size:17px;font-weight:700;">
+                      BDT ${Number(registration.amount).toLocaleString('en-BD')}
+                    </td>
+                  </tr>
+                </table>
+
+                <!-- Course Format -->
+                <h3 style="margin:0 0 12px;color:#17213b;font-size:17px;font-weight:700;">
+                  Course Overview
+                </h3>
+
+                <div style="padding:16px 18px;background:#f8fafc;border:1px solid #e8edf3;border-radius:7px;margin-bottom:24px;">
+                  <p style="margin:0;color:#475569;font-size:14px;line-height:25px;">
+                    <strong style="color:#17213b;">24 Live Classes</strong>
+                    <span style="color:#94a3b8;"> &nbsp;|&nbsp; </span>
+                    <strong style="color:#17213b;">8 Modules</strong>
+                    <span style="color:#94a3b8;"> &nbsp;|&nbsp; </span>
+                    <strong style="color:#17213b;">Practical Assignments</strong>
+                  </p>
+                </div>
+
+                <!-- Orientation Notice -->
+                <div style="padding:18px 20px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:7px;margin-bottom:24px;">
+                  <h3 style="margin:0 0 8px;color:#1e40af;font-size:15px;font-weight:700;">
+                    Orientation Class &amp; Schedule
+                  </h3>
+                  <p style="margin:0;color:#334155;font-size:14px;line-height:24px;">
+                    Details regarding the orientation class, including its date and time, will be shared with registered participants later. Please stay connected and check your email and WhatsApp group regularly for further announcements.
+                  </p>
+                </div>
+
+                ${groupHtml}
+
+                <p style="margin:22px 0 0;color:#526078;font-size:14px;line-height:24px;">
+                  Please keep this email for your records. We look forward to having you with us on this learning journey.
+                </p>
+
+                <!-- Signature -->
+                <div style="margin-top:30px;padding-top:22px;border-top:1px solid #e8edf3;">
+                  <p style="margin:0 0 12px;color:#334155;font-size:14px;">
+                    Regards,
+                  </p>
+
+                  <img
+                    src="https://www.researchustad.org/logo.png"
+                    alt="Research Ustad"
+                    style="width:100px;height:100px;display:block;object-fit:contain;margin-bottom:10px;"
+                    width="100"
+                    height="100"
+                  >
+
+                  <p style="margin:0 0 14px;font-size:17px;font-weight:700;color:#17213b;">
+                    Research Ustad Team
+                  </p>
+
+                  <p style="margin:5px 0;color:#555;font-size:13px;line-height:21px;">
+                    <strong>Website:</strong>
+                    <a href="https://www.researchustad.org" style="color:#2546a8;text-decoration:none;">
+                      Research Ustad
+                    </a>
+                  </p>
+
+                  <p style="margin:5px 0;color:#555;font-size:13px;line-height:21px;">
+                    <strong>WhatsApp:</strong>
+                    <a href="https://wa.me/8801724653054" style="color:#16834a;text-decoration:none;">
+                      +880 1724-653054
+                    </a>
+                  </p>
+
+                  <p style="margin:5px 0;color:#555;font-size:13px;line-height:21px;">
+                    <strong>Email:</strong>
+                    <a href="mailto:info@researchustad.org" style="color:#2546a8;text-decoration:none;">
+                      info@researchustad.org
+                    </a>
+                  </p>
+                </div>
+
+              </div>
+
+              <!-- Footer -->
+              <div style="padding:18px 25px;background:#f8fafc;text-align:center;border-top:1px solid #e8edf3;">
+                <p style="margin:0;color:#94a3b8;font-size:12px;line-height:20px;">
+                  © ${new Date().getFullYear()} Research Ustad. All rights reserved.
+                </p>
+                <p style="margin:5px 0 0;color:#94a3b8;font-size:11px;">
+                  Empowering Research, Inspiring Excellence.
+                </p>
+              </div>
+
+            </div>
+          </div>
+        `,
+
     });
   }
 
@@ -1708,9 +1933,13 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
     const phone = this.normalizePhone(registration.whatsapp);
 
     const message =
-      `Research Ustad: Course 01 registration confirmed. ` +
-      `ID: ${registration.registrationId}. ` +
-      `Paid: BDT ${registration.amount}. Check your email for details.`;
+    `Dear ${registration.fullName},\n` +
+    `Congratulations! Your registration for Batch 01 has been successfully confirmed.\n` +
+    `Registration ID: ${registration.registrationId}\n` +
+    `Payment Received: BDT ${registration.amount.toLocaleString('en-BD')}\n` +
+    `Please check your email for enrollment details and further instructions.\n`+
+    `Thank you for choosing Research Ustad!\n` +
+    `-Research Ustad`;
 
     const response = await fetch(
       'https://api.zendsms.com/api/v1/send-sms',
@@ -1800,38 +2029,141 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
 
     let registration = await this.authorized(accessToken);
 
-    if (registration.status !== 'confirmed') {
-      if (registration.status === 'pending') {
-        await this.verifyRegistration(registration);
-        registration = await this.authorized(accessToken);
-      }
-
-      if (registration.status !== 'paid') {
-        throw new BadRequestException(
-          'Payment must be verified before confirmation',
-        );
-      }
-
-      const confirmationUpdate = await this.records.updateOne(
-        { _id: registration._id, status: 'paid' },
-        {
-          $set: {
-            status: 'confirmed',
-            termsAcceptedAt: new Date(),
-            confirmedAt: new Date(),
-            updatedAt: new Date(),
-          },
-        },
-      );
-
-      if (confirmationUpdate.modifiedCount === 1) {
-        this.courseRealtime.notifyChange();
-      }
+    // Verify payment before confirmation.
+    if (registration.status === 'pending') {
+      await this.verifyRegistration(registration);
+      registration = await this.authorized(accessToken);
     }
 
-    const confirmed = await this.authorized(accessToken);
+    if (registration.status !== 'paid' &&
+        registration.status !== 'confirmed') {
+      throw new BadRequestException(
+        'Payment must be verified before confirmation',
+      );
+    }
 
-    // Sending failure never changes a paid/confirmed record to unpaid.
+    let confirmed: CourseRecord | null = null;
+    let newlyConfirmed = false;
+
+    const session = this.mongo.startSession();
+
+    try {
+      await session.withTransaction(
+        async () => {
+          // Always read the latest registration inside the transaction.
+          const current = await this.records.findOne(
+            {
+              _id: registration!._id,
+              courseId: COURSE_ID,
+            },
+            { session },
+          );
+
+          if (!current) {
+            throw new NotFoundException(
+              'Registration not found',
+            );
+          }
+
+          // Idempotency: never allocate another ID for an already confirmed registration.
+          if (current.status === 'confirmed') {
+            confirmed = current;
+            return;
+          }
+
+          if (current.status !== 'paid') {
+            throw new BadRequestException(
+              'Payment must be verified before confirmation',
+            );
+          }
+
+          // Fresh official counter namespace.
+          // First successful confirmation gets RU-RAP01-0001.
+          const counter = await this.counters.findOneAndUpdate(
+            { _id: 'RU-RAP01' },
+            {
+              $inc: {
+                seq: 1,
+              },
+            },
+            {
+              upsert: true,
+              returnDocument: 'after',
+              session,
+            },
+          );
+
+          if (!counter) {
+            throw new ServiceUnavailableException(
+              'Unable to generate official registration ID',
+            );
+          }
+
+          const serial = String(counter.seq).padStart(4, '0');
+          const officialRegistrationId = `RU-RAP01-${serial}`;
+
+          const now = new Date();
+
+          // Assign the official ID and confirm in the same transaction.
+          const updateResult = await this.records.updateOne(
+            {
+              _id: current._id,
+              status: 'paid',
+            },
+            {
+              $set: {
+                registrationId: officialRegistrationId,
+                status: 'confirmed',
+                termsAcceptedAt: now,
+                confirmedAt: now,
+                updatedAt: now,
+              },
+            },
+            { session },
+          );
+
+          if (updateResult.modifiedCount !== 1) {
+            throw new ConflictException(
+              'Registration confirmation failed. Please try again.',
+            );
+          }
+
+          const finalRecord = await this.records.findOne(
+            { _id: current._id },
+            { session },
+          );
+
+          if (!finalRecord) {
+            throw new ServiceUnavailableException(
+              'Unable to retrieve confirmed registration',
+            );
+          }
+
+          confirmed = finalRecord;
+          newlyConfirmed = true;
+        },
+        {
+          readConcern: { level: 'snapshot' },
+          writeConcern: { w: 'majority' },
+          readPreference: 'primary',
+        },
+      );
+    } finally {
+      await session.endSession();
+    }
+
+    if (!confirmed) {
+      throw new ServiceUnavailableException(
+        'Registration confirmation could not be completed',
+      );
+    }
+
+    if (newlyConfirmed) {
+      this.courseRealtime.notifyChange();
+    }
+
+    // Notifications run only after the transaction commits.
+    // They will receive the official registration ID.
     await Promise.allSettled([
       this.dispatchNotification(confirmed, 'email'),
       this.dispatchNotification(confirmed, 'sms'),
@@ -1941,7 +2273,7 @@ async requestResume(emailInput: unknown) {
       to: email,
       subject: 'Your Course Registration Verification Code',
       text:
-        `Your Research Ustad Course 01 verification code is: ${otp}\n\n` +
+        `Your Research Ustad Batch 01 verification code is: ${otp}\n\n` +
         'This code expires in 10 minutes.\n' +
         'If you did not request this code, you can ignore this message.',
       html: `
