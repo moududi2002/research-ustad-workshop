@@ -1,7 +1,71 @@
 // frontend/src/app/research-article-writing-academic-publishing-guidelines/page.tsx
 
-import Link from 'next/link';
 import type { Metadata } from 'next';
+export const metadata: Metadata = {
+  title: 'Research Article Writing & Academic Publishing Guidelines',
+
+  description:
+    'Join Research Ustad’s Workshop on Research Article Writing & Academic Publishing Guidelines. Learn research article preparation, academic writing, publication strategies, journal selection, and scholarly publishing practices.',
+
+  keywords: [
+    'Research Ustad',
+    'Research Article Writing',
+    'Academic Publishing Guidelines',
+    'Research Paper Writing Workshop',
+    'Academic Writing',
+    'Research Publication',
+    'Journal Publication',
+    'Research Methodology',
+    'Scholarly Publishing',
+    'Research Training Bangladesh',
+  ],
+
+  alternates: {
+    canonical:
+      'https://workshop.researchustad.org/research-article-writing-academic-publishing-guidelines',
+  },
+
+  openGraph: {
+    title:
+      'Research Article Writing & Academic Publishing Guidelines | Research Ustad',
+    description:
+      'Learn research article writing, academic publishing strategies, journal selection, and scholarly publication practices with Research Ustad.',
+    url: 'https://workshop.researchustad.org/research-article-writing-academic-publishing-guidelines',
+    siteName: 'Research Ustad',
+    type: 'website',
+    locale: 'en_US',
+
+    // Add an actual publicly accessible image path if available.
+    // Example: images/research-article-workshop.jpg
+    images: [
+      {
+        url: 'https://workshop.researchustad.org/images/research-article-workshop.png',
+        width: 1200,
+        height: 630,
+        alt: 'Research Article Writing & Academic Publishing Guidelines - Research Ustad',
+      },
+    ],
+  },
+
+  twitter: {
+    card: 'summary_large_image',
+    title:
+      'Research Article Writing & Academic Publishing Guidelines | Research Ustad',
+    description:
+      'Explore research article writing and academic publishing guidelines with Research Ustad.',
+    images: [
+      'https://workshop.researchustad.org/images/research-article-workshop.png',
+    ],
+  },
+
+  robots: {
+    index: true,
+    follow: true,
+  },
+};
+
+
+import Link from 'next/link';
 import {
   HiOutlineAcademicCap,
   HiOutlineBookOpen,
@@ -35,11 +99,6 @@ import PayFooter from '@/components/PayFooter';
 const REGISTER_URL =
   '/research-article-writing-academic-publishing-guidelines/register';
 
-export const metadata: Metadata = {
-  title: `${COURSE_TITLE} | Research Ustad`,
-  description:
-    'Join a 24-class, 8-module live guidelines covering research foundations, literature review, academic writing, research ethics, peer review and journal submission.',
-};
 
 export default function CourseDetailsPage() {
   return (

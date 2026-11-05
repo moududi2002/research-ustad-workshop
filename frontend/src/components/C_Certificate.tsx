@@ -135,13 +135,7 @@ export default function Certificate() {
               <div className="flex items-center justify-between border-t border-ink-100 pt-4">
                 <div>
                   <div className="flex h-10 w-28 items-end">
-                    <Image
-                      src="/images/sign.png"
-                      alt="Signature"
-                      width={110}
-                      height={45}
-                      className="object-contain"
-                    />
+                    Signature
                   </div>
 
                   <div className="mt-1 h-px w-28 bg-ink-300" />

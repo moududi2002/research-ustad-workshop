@@ -10,7 +10,11 @@ import {
 } from 'react-icons/fi';
 
 import { io } from 'socket.io-client';
-import adminApi from '@/lib/adminApi';
+import adminApi, {
+  downloadCoursePaymentReceipt,
+} from '@/lib/adminApi';
+
+import toast from 'react-hot-toast';
 
 const PAGE_SIZE = 20;
 
@@ -134,8 +138,16 @@ function Detail({ label, value }: { label: string; value?: string | number | nul
   );
 }
 
-function ParticipantDetails({ participant, onClose }: {
-  participant: Participant; onClose: () => void;
+function ParticipantDetails({
+  participant,
+  onClose,
+  onDownloadReceipt,
+  downloadingReceipt,
+}: {
+  participant: Participant;
+  onClose: () => void;
+  onDownloadReceipt: () => void;
+  downloadingReceipt: boolean;
 }) {
   const closeRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
@@ -205,8 +217,45 @@ function ParticipantDetails({ participant, onClose }: {
             ) : <p className="text-sm text-slate-600">Device information was not captured for this earlier registration.</p>}
           </div>
         </div>
-        <div className="shrink-0 border-t border-slate-100 bg-slate-50 p-4 text-right">
-          <button type="button" onClick={onClose} className="rounded-xl bg-indigo-700 px-6 py-2.5 text-sm font-bold text-white hover:bg-indigo-800">Close</button>
+        <div className="shrink-0 border-t border-slate-100 bg-slate-50 p-4">
+          <div className="flex flex-col-reverse justify-between gap-3 sm:flex-row sm:items-center">
+
+            <div>
+              {participant.status === 'confirmed' ? (
+                <button
+                  type="button"
+                  onClick={onDownloadReceipt}
+                  disabled={downloadingReceipt}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {downloadingReceipt ? (
+                    <>
+                      <FiRefreshCw className="animate-spin" />
+                      Generating Receipt...
+                    </>
+                  ) : (
+                    <>
+                      <FiDownload />
+                      Download Payment Receipt
+                    </>
+                  )}
+                </button>
+              ) : (
+                <p className="text-xs font-medium text-slate-500">
+                  Receipt will be available after payment confirmation.
+                </p>
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-xl bg-indigo-700 px-6 py-2.5 text-sm font-bold text-white hover:bg-indigo-800"
+            >
+              Close
+            </button>
+
+          </div>
         </div>
       </section>
     </div>
@@ -229,6 +278,7 @@ function CourseParticipantsDashboard() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState('');
   const [selected, setSelected] = useState<Participant | null>(null);
+  const [downloadingReceiptId, setDownloadingReceiptId] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const generation = useRef(0);
   const loadingMoreLock = useRef(false);
@@ -239,6 +289,35 @@ function CourseParticipantsDashboard() {
   const liveRefreshRef = useRef<() => Promise<void>>(
     async () => {},
   );
+
+  const handleDownloadReceipt = async (registrationId: string) => {
+    if (downloadingReceiptId) return;
+
+    setDownloadingReceiptId(registrationId);
+
+    try {
+      const blob = await downloadCoursePaymentReceipt(registrationId);
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+
+      link.href = url;
+      link.download = `Research-Ustad-Receipt-${registrationId}.pdf`;
+
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      window.setTimeout(() => window.URL.revokeObjectURL(url), 1000);
+
+      toast.success('Payment receipt downloaded successfully.');
+    } catch (error) {
+      console.error('Receipt download failed:', error);
+      toast.error('Unable to download payment receipt.');
+    } finally {
+      setDownloadingReceiptId(null);
+    }
+  };
 
   useEffect(() => {
     const timer = window.setTimeout(() => setDebouncedSearch(search.trim()), 350);
@@ -651,7 +730,18 @@ function CourseParticipantsDashboard() {
         </section>
       </div>
 
-      {selected && <ParticipantDetails participant={selected} onClose={() => setSelected(null)} />}
+      {selected && (
+        <ParticipantDetails
+          participant={selected}
+          onClose={() => setSelected(null)}
+          onDownloadReceipt={() =>
+            handleDownloadReceipt(selected.registrationId)
+          }
+          downloadingReceipt={
+            downloadingReceiptId === selected.registrationId
+          }
+        />
+      )}
     </main>
   );
 }

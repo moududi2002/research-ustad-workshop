@@ -20,6 +20,7 @@ import { CourseModule } from './course/course.module';
 import { CertificatesModule } from './certificates/certificates.module';
 import { Certificate } from './certificates/certificate.entity';
 import { CertificateEmailLog } from './certificates/certificate-email-log.entity';
+import { PaymentReceiptsModule } from './payment-receipts/payment-receipts.module';
 
 @Module({
   imports: [
@@ -56,6 +57,7 @@ import { CertificateEmailLog } from './certificates/certificate-email-log.entity
     EmailModule,
     SmsModule,
     CertificatesModule,
+    PaymentReceiptsModule,
     CourseModule,
   ],
 })

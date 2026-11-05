@@ -24,6 +24,8 @@ import { CourseRegistrationDto } from './dto/course-registration.dto';
 
 import { CourseAdminGateway } from './course-admin.gateway';
 
+import { PaymentReceiptsService } from '../payment-receipts/payment-receipts.service';
+
 const COURSE_ID = 'research-article-writing-01';
 const COURSE_SLUG =
   'research-article-writing-academic-publishing-guidelines';
@@ -123,6 +125,8 @@ interface CourseCoupon {
 export class CourseService implements OnModuleInit, OnModuleDestroy {
   constructor(
   private readonly courseRealtime: CourseAdminGateway,
+  private readonly paymentReceiptsService: PaymentReceiptsService,
+
   ) {}
   private mongo: MongoClient;
   private records: Collection<CourseRecord>;
@@ -1757,6 +1761,9 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
       </div>
     `;
 
+    const receiptPdf =
+    await this.paymentReceiptsService.generatePdf(registration);
+
     await transporter.sendMail({
       from: `"Research Ustad" <${user}>`,
       to: registration.email,
@@ -1919,6 +1926,13 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
           </div>
         `,
 
+        attachments: [
+        {
+          filename: `Research-Ustad-Receipt-${registration.registrationId}.pdf`,
+          content: receiptPdf,
+          contentType: 'application/pdf',
+        },
+      ],
     });
   }
 

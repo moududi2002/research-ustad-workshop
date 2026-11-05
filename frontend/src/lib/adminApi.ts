@@ -112,4 +112,21 @@ export async function sendCertificateNotification() {
   return response.data;
 }
 
+/**
+ * Download a confirmed course payment receipt PDF.
+ * Uses the existing admin Axios instance and HttpOnly JWT cookie.
+ */
+export async function downloadCoursePaymentReceipt(
+  registrationId: string,
+): Promise<Blob> {
+  const response = await adminApi.get(
+    `/admin/payment-receipts/${encodeURIComponent(registrationId)}/pdf`,
+    {
+      responseType: 'blob',
+    },
+  );
+
+  return response.data;
+}
+
 export default adminApi;
