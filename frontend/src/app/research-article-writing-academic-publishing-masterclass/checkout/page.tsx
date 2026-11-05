@@ -166,6 +166,12 @@ export default function CourseCheckoutPage() {
   const [working, setWorking] = useState(false);
   const [error, setError] = useState('');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  // Pre-payment policy acceptance
+const [acceptedPrePaymentTerms, setAcceptedPrePaymentTerms] =
+  useState(false);
+
+const [acceptedRefundPolicy, setAcceptedRefundPolicy] =
+  useState(false);
 
   const [couponInput, setCouponInput] = useState('');
   const [couponWorking, setCouponWorking] = useState(false);
@@ -331,14 +337,25 @@ export default function CourseCheckoutPage() {
     }
   }
 
+
   async function proceedToPayment() {
+    if (!acceptedPrePaymentTerms || !acceptedRefundPolicy) {
+      toast.error(
+        'Please accept the Terms & Conditions and Return & Refund Policy before proceeding.',
+      );
+      return;
+    }
+
     setWorking(true);
 
     try {
       const response = await fetch('/api/course/initiate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
+        body: JSON.stringify({
+          termsAccepted: acceptedPrePaymentTerms,
+          refundPolicyAccepted: acceptedRefundPolicy,
+        }),
       });
 
       const data = await response.json();
@@ -365,6 +382,7 @@ export default function CourseCheckoutPage() {
       void refresh();
     }
   }
+
 
   async function confirmRegistration() {
     if (!acceptedTerms || registration?.status !== 'paid') {
@@ -762,22 +780,117 @@ export default function CourseCheckoutPage() {
                       Complete payment to continue.
                     </div>
 
-                    <button
-                      onClick={proceedToPayment}
-                      disabled={working}
-                      className="flex w-full items-center justify-center gap-3 rounded-xl bg-indigo-600 px-5 py-4 text-lg font-bold text-white transition hover:bg-indigo-700 disabled:opacity-60"
-                    >
-                      <HiOutlineCreditCard className="h-6 w-6" />
-                      {working
-                        ? 'Preparing Secure Checkout...'
-                        : `Proceed to Payment — ৳${registration.amount.toLocaleString('en-BD')}`}
-                      <HiOutlineArrowRight className="h-5 w-5" />
-                    </button>
+                    {/* Mandatory Pre-Payment Policy Acceptance */}
+                    <div className="mb-6 space-y-4 rounded-2xl border border-indigo-100 bg-indigo-50/70 p-5 sm:p-6">
 
-                    <p className="mt-3 text-center text-xs text-slate-500">
-                      You will be redirected to PayStation's secure
-                      payment page.
-                    </p>
+                      <div>
+                        <h3 className="text-base font-bold text-indigo-950">
+                          Review & Accept Our Policies
+                        </h3>
+
+                        <p className="mt-1 text-sm leading-6 text-slate-600">
+                          Before proceeding to payment, please review and accept
+                          the following policies of Research Ustad.
+                        </p>
+                      </div>
+
+                      {/* Terms & Conditions */}
+                      <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 bg-white p-4 transition hover:border-indigo-300">
+
+                        <input
+                          type="checkbox"
+                          checked={acceptedPrePaymentTerms}
+                          onChange={(event) =>
+                            setAcceptedPrePaymentTerms(event.target.checked)
+                          }
+                          className="mt-1 h-5 w-5 shrink-0 cursor-pointer accent-indigo-600"
+                        />
+
+                        <span className="text-sm leading-7 text-slate-700">
+                          I have read, understood, and agree to the{" "}
+
+                          <a
+                            href="https://researchustad.org/terms-and-conditions"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(event) => event.stopPropagation()}
+                            className="font-bold text-indigo-700 underline underline-offset-4 hover:text-indigo-900"
+                          >
+                            Terms & Conditions
+                          </a>
+
+                          {" "}of Research Ustad.
+
+                          <span className="ml-1 font-semibold text-red-600">
+                            *
+                          </span>
+                        </span>
+                      </label>
+
+                      {/* Return & Refund Policy */}
+                      <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 bg-white p-4 transition hover:border-indigo-300">
+
+                        <input
+                          type="checkbox"
+                          checked={acceptedRefundPolicy}
+                          onChange={(event) =>
+                            setAcceptedRefundPolicy(event.target.checked)
+                          }
+                          className="mt-1 h-5 w-5 shrink-0 cursor-pointer accent-indigo-600"
+                        />
+
+                        <span className="text-sm leading-7 text-slate-700">
+                          I have read, understood, and agree to the{" "}
+
+                          <a
+                            href="https://researchustad.org/return-and-refund-policy"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(event) => event.stopPropagation()}
+                            className="font-bold text-indigo-700 underline underline-offset-4 hover:text-indigo-900"
+                          >
+                            Return & Refund Policy
+                          </a>
+
+                          {" "}, including the applicable deductions for classes
+                          already attended and non-refundable payment transaction charges.
+
+                          <span className="ml-1 font-semibold text-red-600">
+                            *
+                          </span>
+                        </span>
+                      </label>
+
+                      <p className="text-xs leading-6 text-slate-500">
+                        Both acknowledgements are required before you can proceed
+                        to the secure payment gateway.
+                      </p>
+                    </div>
+
+                      <button
+                        type="button"
+                        onClick={proceedToPayment}
+                        disabled={
+                          working ||
+                          !acceptedPrePaymentTerms ||
+                          !acceptedRefundPolicy
+                        }
+                        className="flex w-full items-center justify-center gap-3 rounded-xl bg-indigo-600 px-5 py-3 text-lg font-bold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 disabled:shadow-none"
+                      >
+                        <HiOutlineCreditCard className="h-6 w-6" />
+
+                        {working
+                          ? 'Preparing Secure Checkout...'
+                          : `Proceed to Payment — ৳${registration.amount.toLocaleString('en-BD')}`}
+
+                        <HiOutlineArrowRight className="h-5 w-5" />
+                      </button>
+
+                      <p className="mt-3 text-center text-xs text-slate-500">
+                        You will be redirected to PayStation's secure payment page
+                        after accepting both policies.
+                      </p>
+
                   </section>
                 )}
 
@@ -805,7 +918,7 @@ export default function CourseCheckoutPage() {
                       <button
                         onClick={proceedToPayment}
                         disabled={working}
-                        className="flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-4 font-bold text-white hover:bg-indigo-700 disabled:opacity-60"
+                        className="flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 font-bold text-white hover:bg-indigo-700 disabled:opacity-60"
                       >
                         <HiOutlineCreditCard className="h-5 w-5" />
                         Continue Existing Payment
