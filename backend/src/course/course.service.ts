@@ -1120,21 +1120,6 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
       );
     }
 
-     if (
-      registration.status === 'pending' &&
-      registration.paymentUrl
-    ) {
-      return {
-        invoiceNumber: registration.invoiceNumber,
-        paymentUrl: registration.paymentUrl,
-      };
-    }
-
-    if (registration.status !== 'draft') {
-      throw new ConflictException(
-        'Payment initiation is already in progress',
-      );
-    }
 
     if (termsAccepted !== true || refundPolicyAccepted !== true) {
       throw new BadRequestException(
