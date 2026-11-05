@@ -1,10 +1,10 @@
 // frontend/src/data/course01.ts
 
 export const COURSE_SLUG =
-  'research-article-writing-academic-publishing-masterclass';
+  'research-article-writing-academic-publishing-guidelines';
 
 export const COURSE_TITLE =
-  'Research Article Writing & Academic Publishing Masterclass';
+  'Research Article Writing & Academic Publishing Guidelines';
 
 export const COURSE_SUBTITLE =
   'From Research Fundamentals to Journal Submission';

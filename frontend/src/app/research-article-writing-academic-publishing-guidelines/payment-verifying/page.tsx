@@ -1,4 +1,4 @@
-// frontend/src/app/research-article-writing-academic-publishing-masterclass/payment-verifying/page.tsx
+// frontend/src/app/research-article-writing-academic-publishing-guidelines/payment-verifying/page.tsx
 
 'use client';
 
@@ -11,7 +11,7 @@ import {
 } from 'react-icons/hi2';
 
 const SLUG =
-  '/research-article-writing-academic-publishing-masterclass';
+  '/research-article-writing-academic-publishing-guidelines';
 
 const VERIFY_DURATION = 10_000;
 

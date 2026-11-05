@@ -1,4 +1,4 @@
-// frontend/src/app/research-article-writing-academic-publishing-masterclass/page.tsx
+// frontend/src/app/research-article-writing-academic-publishing-guidelines/page.tsx
 
 import Link from 'next/link';
 import type { Metadata } from 'next';
@@ -33,12 +33,12 @@ import Footer from '../../components/Footer';
 import PayFooter from '@/components/PayFooter';
 
 const REGISTER_URL =
-  '/research-article-writing-academic-publishing-masterclass/register';
+  '/research-article-writing-academic-publishing-guidelines/register';
 
 export const metadata: Metadata = {
   title: `${COURSE_TITLE} | Research Ustad`,
   description:
-    'Join a 24-class, 8-module live masterclass covering research foundations, literature review, academic writing, research ethics, peer review and journal submission.',
+    'Join a 24-class, 8-module live guidelines covering research foundations, literature review, academic writing, research ethics, peer review and journal submission.',
 };
 
 export default function CourseDetailsPage() {
@@ -127,7 +127,7 @@ export default function CourseDetailsPage() {
                 href={REGISTER_URL}
                 className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-7 py-4 font-bold text-white shadow-lg shadow-indigo-600/20 transition hover:bg-indigo-700"
               >
-                Register for the Masterclass
+                Register for the Guidelines
                 <HiOutlineArrowRight className="h-5 w-5" />
               </Link>
 

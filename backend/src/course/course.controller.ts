@@ -49,8 +49,19 @@ export class CourseController {
   }
 
   @Post('initiate')
-  async initiate(@Headers('x-course-access') token: string) {
-    return this.course.initiate(token);
+  async initiate(
+    @Headers('x-course-access') token: string,
+    @Body()
+    data: {
+      termsAccepted: boolean;
+      refundPolicyAccepted: boolean;
+    },
+  ) {
+    return this.course.initiate(
+      token,
+      data?.termsAccepted,
+      data?.refundPolicyAccepted,
+    );
   }
 
   @Post('verify')

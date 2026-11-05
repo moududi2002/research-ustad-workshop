@@ -17,7 +17,7 @@ import Image from 'next/image';
 import PayFooter from '@/components/PayFooter';
 
 const COURSE_SLUG =
-  '/research-article-writing-academic-publishing-masterclass';
+  '/research-article-writing-academic-publishing-guidelines';
 
 const programs = [
   {
@@ -51,7 +51,7 @@ const programs = [
   {
     number: '01',
     category: 'Course',
-    title: 'Research Article Writing & Academic Publishing Masterclass',
+    title: 'Research Article Writing & Academic Publishing Guidelines',
     subtitle: 'From Research Fundamentals to Journal Submission',
     description:
       'A comprehensive, beginner-friendly live training program with guided practice, scholarly writing, peer review, and publication strategy.',

@@ -1,4 +1,4 @@
-// frontend/src/app/research-article-writing-academic-publishing-masterclass/checkout/page.tsx
+// frontend/src/app/research-article-writing-academic-publishing-guidelines/checkout/page.tsx
 
 'use client';
 
@@ -7,6 +7,9 @@ import { useCallback, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Image from 'next/image';
 import PayFooter from '@/components/PayFooter';
+
+import { IoCopySharp } from "react-icons/io5";
+
 
 import { usePathname, useRouter } from 'next/navigation';
 
@@ -27,7 +30,7 @@ import {
 } from 'react-icons/hi2';
 
 const SLUG =
-  '/research-article-writing-academic-publishing-masterclass';
+  '/research-article-writing-academic-publishing-guidelines';
 
 type Status =
   | 'draft'
@@ -116,6 +119,51 @@ function DetailRow({
       <span className="break-all text-sm font-semibold text-slate-800 sm:text-right">
         {value || '—'}
       </span>
+    </div>
+  );
+}
+
+function CopyableDetailRow({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | null | undefined;
+}) {
+  async function copyValue() {
+    if (!value) return;
+
+    try {
+      await navigator.clipboard.writeText(value);
+      toast.success('Copied successfully');
+    } catch {
+      toast.error('Unable to copy. Please copy manually.');
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-2 border-b border-emerald-100 py-4 last:border-0 sm:flex-row sm:items-center sm:justify-between sm:gap-5">
+      <span className="text-sm text-emerald-800">
+        {label}
+      </span>
+
+      <div className="flex items-center gap-3 sm:justify-end">
+        <span className="break-all font-mono text-sm font-bold text-emerald-950">
+          {value || '—'}
+        </span>
+
+        {value && (
+          <button
+            type="button"
+            onClick={() => void copyValue()}
+            title={`Copy ${label}`}
+            aria-label={`Copy ${label}`}
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-emerald-200 bg-white text-emerald-700 transition hover:bg-emerald-100"
+          >
+            <IoCopySharp className="h-5 w-5" />
+          </button>
+        )}
+      </div>
     </div>
   );
 }
@@ -338,10 +386,15 @@ const [acceptedRefundPolicy, setAcceptedRefundPolicy] =
   }
 
 
-  async function proceedToPayment() {
-    if (!acceptedPrePaymentTerms || !acceptedRefundPolicy) {
+    async function proceedToPayment() {
+    const needsAcceptance = registration?.status === 'draft';
+
+    if (
+      needsAcceptance &&
+      (!acceptedPrePaymentTerms || !acceptedRefundPolicy)
+    ) {
       toast.error(
-        'Please accept the Terms & Conditions and Return & Refund Policy before proceeding.',
+        'Please accept both policies before proceeding to payment.',
       );
       return;
     }
@@ -349,19 +402,19 @@ const [acceptedRefundPolicy, setAcceptedRefundPolicy] =
     setWorking(true);
 
     try {
-      const response = await fetch('/api/course/initiate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          termsAccepted: acceptedPrePaymentTerms,
-          refundPolicyAccepted: acceptedRefundPolicy,
-        }),
-      });
+      const data = await courseApi(
+        'initiate',
+        'POST',
+        needsAcceptance
+          ? {
+              termsAccepted: true,
+              refundPolicyAccepted: true,
+            }
+          : {},
+      );
 
-      const data = await response.json();
-
-      if (!response.ok || !data.paymentUrl) {
-        throw new Error(data.message || 'Payment link unavailable');
+      if (!data.paymentUrl) {
+        throw new Error('Payment link unavailable');
       }
 
       const paymentUrl = new URL(data.paymentUrl);
@@ -561,7 +614,7 @@ const [acceptedRefundPolicy, setAcceptedRefundPolicy] =
 
                 <p className="mx-auto mt-3 max-w-lg text-sm leading-7 text-white/90">
                   {confirmed
-                    ? 'Your enrollment is confirmed. Welcome to the Research Ustad Masterclass.'
+                    ? 'Your enrollment is confirmed. Welcome to the Research Ustad Guidelines.'
                     : isPaid
                     ? 'Your payment has been independently verified. Accept the terms below to finalize enrollment.'
                     : pending
@@ -578,7 +631,7 @@ const [acceptedRefundPolicy, setAcceptedRefundPolicy] =
                   </p>
 
                   <h2 className="mt-2 text-xl font-bold leading-8">
-                    Research Article Writing & Academic Publishing Masterclass
+                    Research Article Writing & Academic Publishing Guidelines
                   </h2>
 
                   <p className="mt-2 text-sm text-slate-500">
@@ -652,7 +705,8 @@ const [acceptedRefundPolicy, setAcceptedRefundPolicy] =
                   </section>
                 )}
 
-                {/* Pricing */}
+              {/* Pricing */}
+              {status !== 'paid' && status !== 'confirmed' && (
                 <section className="rounded-2xl border border-indigo-100 bg-indigo-50 p-6">
                   <p className="text-sm font-bold text-indigo-900">
                     Enrollment Fee
@@ -770,15 +824,11 @@ const [acceptedRefundPolicy, setAcceptedRefundPolicy] =
                 )}
 
                 </section>
+              )}
 
                 {/* Before payment */}
                 {status === 'draft' && (
                   <section>
-                    <div className="mb-5 flex gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-                      <HiOutlineExclamationTriangle className="mt-0.5 h-5 w-5 shrink-0" />
-                      Your registration is not confirmed yet.
-                      Complete payment to continue.
-                    </div>
 
                     {/* Mandatory Pre-Payment Policy Acceptance */}
                     <div className="mb-6 space-y-4 rounded-2xl border border-indigo-100 bg-indigo-50/70 p-5 sm:p-6">
@@ -807,7 +857,7 @@ const [acceptedRefundPolicy, setAcceptedRefundPolicy] =
                         />
 
                         <span className="text-sm leading-7 text-slate-700">
-                          I have read, understood, and agree to the{" "}
+                          I have read, understood and agree to the{" "}
 
                           <a
                             href="https://researchustad.org/terms-and-conditions"
@@ -840,7 +890,7 @@ const [acceptedRefundPolicy, setAcceptedRefundPolicy] =
                         />
 
                         <span className="text-sm leading-7 text-slate-700">
-                          I have read, understood, and agree to the{" "}
+                          I have read, understood and agree to the{" "}
 
                           <a
                             href="https://researchustad.org/return-and-refund-policy"
@@ -865,6 +915,12 @@ const [acceptedRefundPolicy, setAcceptedRefundPolicy] =
                         Both acknowledgements are required before you can proceed
                         to the secure payment gateway.
                       </p>
+                    </div>
+
+                    <div className="mb-5 flex gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+                      <HiOutlineExclamationTriangle className="mt-0.5 h-5 w-5 shrink-0" />
+                      Your registration is not confirmed yet.
+                      Complete payment to continue.
                     </div>
 
                       <button
@@ -987,7 +1043,7 @@ const [acceptedRefundPolicy, setAcceptedRefundPolicy] =
                           <strong>2. Academic Integrity:</strong>{' '}
                           Participants must follow responsible
                           research practices and avoid plagiarism,
-                          fabrication, and other misconduct.
+                          fabrication and other misconduct.
                         </p>
 
                         <p>
@@ -1008,7 +1064,7 @@ const [acceptedRefundPolicy, setAcceptedRefundPolicy] =
                           <strong>5. Communication:</strong>{' '}
                           Important course updates may be
                           communicated through registered email,
-                          SMS, and the official course group.
+                          SMS and the official course group.
                         </p>
 
                         <p>
@@ -1053,57 +1109,6 @@ const [acceptedRefundPolicy, setAcceptedRefundPolicy] =
                 {/* Confirmed registration */}
                 {confirmed && (
                   <section className="space-y-6">
-                    <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6 text-emerald-900">
-                      <div className="flex items-center gap-3">
-                        <HiOutlineCheckCircle className="h-8 w-8 text-emerald-600" />
-                        <h3 className="text-xl font-bold">
-                          Enrollment Confirmed
-                        </h3>
-                      </div>
-
-                      <p className="mt-3 text-sm leading-7">
-                        Your BDT {registration.amount.toLocaleString('en-BD')}
-                        {' '}course payment was verified and your registration
-                        has been completed. Keep your registration ID
-                        for reference.
-                      </p>
-
-                      <DetailRow
-                        label="Registration ID"
-                        value={registration.registrationId}
-                      />
-
-                      <DetailRow
-                        label="Payment Transaction ID"
-                        value={registration.transactionId}
-                      />
-                    </div>
-
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div className="rounded-xl border border-slate-200 bg-white p-5">
-                        <HiOutlineEnvelope className="h-6 w-6 text-indigo-600" />
-
-                        <p className="mt-3 font-bold">
-                          Email Notification
-                        </p>
-
-                        <p className="mt-2 text-sm text-slate-500">
-                          Status: {registration.notifications.email}
-                        </p>
-                      </div>
-
-                      <div className="rounded-xl border border-slate-200 bg-white p-5">
-                        <HiOutlineChatBubbleLeftRight className="h-6 w-6 text-indigo-600" />
-
-                        <p className="mt-3 font-bold">
-                          SMS Notification
-                        </p>
-
-                        <p className="mt-2 text-sm text-slate-500">
-                          Status: {registration.notifications.sms}
-                        </p>
-                      </div>
-                    </div>
 
                     {registration.whatsappGroupUrl ? (
                       <div className="rounded-2xl border-2 border-emerald-300 bg-gradient-to-br from-emerald-50 to-green-100 p-7 text-center">
@@ -1134,8 +1139,81 @@ const [acceptedRefundPolicy, setAcceptedRefundPolicy] =
                         will be shared by Research Ustad.
                       </div>
                     )}
+                    
+                    <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6 text-emerald-900">
+                      <div className="flex items-center gap-3">
+                        <HiOutlineCheckCircle className="h-8 w-8 text-emerald-600" />
+                        <h3 className="text-xl font-bold">
+                          Enrollment Confirmed
+                        </h3>
+                      </div>
+
+                      <p className="mt-3 text-sm leading-7">
+                        Your BDT {registration.amount.toLocaleString('en-BD')}
+                        {' '}course payment was verified and your registration
+                        has been completed. Keep your registration ID
+                        for reference.
+                      </p>
+
+                     <div className="mt-5">
+                        <CopyableDetailRow
+                          label="Registration ID"
+                          value={registration.registrationId}
+                        />
+
+                        <CopyableDetailRow
+                          label="Payment Transaction ID"
+                          value={registration.transactionId}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="rounded-xl border border-slate-200 bg-white p-5">
+                        <HiOutlineEnvelope className="h-6 w-6 text-indigo-600" />
+
+                        <p className="mt-3 font-bold">
+                          Email Notification
+                        </p>
+
+                        <p className="mt-2 text-sm text-slate-500">
+                          Status: {registration.notifications.email}
+                        </p>
+                      </div>
+
+                      <div className="rounded-xl border border-slate-200 bg-white p-5">
+                        <HiOutlineChatBubbleLeftRight className="h-6 w-6 text-indigo-600" />
+
+                        <p className="mt-3 font-bold">
+                          SMS Notification
+                        </p>
+
+                        <p className="mt-2 text-sm text-slate-500">
+                          Status: {registration.notifications.sms}
+                        </p>
+                      </div>
+                    </div>
                   </section>
                 )}
+
+                {/* Confirmation Actions */}
+                <div className="grid gap-4 border-t border-slate-100 pt-6 sm:grid-cols-2">
+                  <Link
+                    href={SLUG}
+                    className="flex items-center justify-center rounded-xl bg-indigo-600 px-6 py-4 text-center font-bold text-white transition hover:bg-indigo-700"
+                  >
+                    Back to Home
+                  </Link>
+
+                  <a
+                    href="https://researchustad.org"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center rounded-xl border-2 border-indigo-200 bg-white px-6 py-4 text-center font-bold text-indigo-700 transition hover:border-indigo-400 hover:bg-indigo-50"
+                  >
+                    Visit Research Ustad
+                  </a>
+                </div>
 
                 <div className="border-t border-slate-100 pt-6 text-center">
                   <Link

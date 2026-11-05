@@ -24,7 +24,7 @@ import { CourseRegistrationDto } from './dto/course-registration.dto';
 
 const COURSE_ID = 'research-article-writing-01';
 const COURSE_SLUG =
-  'research-article-writing-academic-publishing-masterclass';
+  'research-article-writing-academic-publishing-guidelines';
 
 const COURSE_FEE = 3000;
 const ORIGINAL_FEE = 5000;
@@ -70,6 +70,12 @@ interface CourseRecord {
   paymentMethod?: string;
   paidAt?: Date;
   termsAcceptedAt?: Date;
+
+  prePaymentTermsAccepted?: boolean;
+  refundPolicyAccepted?: boolean;
+  prePaymentAcceptedAt?: Date;
+  prePaymentPolicyVersion?: string;
+
   confirmedAt?: Date;
   notifications: {
     email: DeliveryStatus;
@@ -622,7 +628,7 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
     // Serial numbers: 0001, 0002, 0003...
     const serial = String(counter.seq).padStart(4, '0');
 
-    const registrationId = `RU-C01/${year}-${serial}`;
+    const registrationId = `RU-RAP01-${serial}`;
 
     const now = new Date();
 
@@ -1090,7 +1096,11 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  async initiate(accessToken?: string) {
+  async initiate(
+    accessToken?: string,
+    termsAccepted?: boolean,
+    refundPolicyAccepted?: boolean,
+  ) {
     const registration = await this.authorized(accessToken);
 
     if (
@@ -1099,6 +1109,42 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
     ) {
       throw new BadRequestException(
         'This registration has already been paid',
+      );
+    }
+
+    if (registration.status !== 'draft') {
+      throw new ConflictException(
+        'Payment initiation is already in progress',
+      );
+    }
+
+    if (termsAccepted !== true || refundPolicyAccepted !== true) {
+      throw new BadRequestException(
+        'You must accept the Terms & Conditions and Return & Refund Policy before payment.',
+      );
+    }
+
+    const acceptedAt = new Date();
+
+    const acceptanceSaved = await this.records.updateOne(
+      {
+        _id: registration._id,
+        status: 'draft',
+      },
+      {
+        $set: {
+          prePaymentTermsAccepted: true,
+          refundPolicyAccepted: true,
+          prePaymentAcceptedAt: acceptedAt,
+          prePaymentPolicyVersion: '2026-11-05',
+          updatedAt: acceptedAt,
+        },
+      },
+    );
+
+    if (acceptanceSaved.modifiedCount !== 1) {
+      throw new ConflictException(
+        'Unable to save policy acceptance. Please refresh and try again.',
       );
     }
 
@@ -1185,7 +1231,7 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
         payment_amount: String(registration.amount),
         pay_with_charge: '1',
         reference: COURSE_ID,
-        checkout_items: 'Course 01 - Research Publishing Masterclass',
+        checkout_items: 'Course 01 - Research Publishing Guidelines',
         cust_name: registration.fullName,
         cust_email: registration.email,
         cust_phone: registration.whatsapp,
@@ -1606,7 +1652,7 @@ export class CourseService implements OnModuleInit, OnModuleDestroy {
           <h1 style="color:#2546a8">Registration Confirmed</h1>
           <p>Dear ${this.escapeHtml(registration.fullName)},</p>
           <p>Your payment has been verified and your registration is confirmed.</p>
-          <h2>Research Article Writing &amp; Academic Publishing Masterclass</h2>
+          <h2>Research Article Writing &amp; Academic Publishing Guidelines</h2>
           <p><strong>Registration ID:</strong> ${this.escapeHtml(registration.registrationId)}</p>
           <p><strong>Transaction ID:</strong> ${this.escapeHtml(registration.transactionId)}</p>
           <p><strong>Amount Paid:</strong> BDT ${registration.amount}</p>

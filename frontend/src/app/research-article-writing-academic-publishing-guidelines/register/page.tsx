@@ -1,4 +1,4 @@
-// frontend/src/app/research-article-writing-academic-publishing-masterclass/register/page.tsx
+// frontend/src/app/research-article-writing-academic-publishing-guidelines/register/page.tsx
 
 'use client';
 
@@ -27,7 +27,7 @@ import Footer from '@/components/Footer';
 import Image from 'next/image';
 
 const SLUG =
-  '/research-article-writing-academic-publishing-masterclass';
+  '/research-article-writing-academic-publishing-guidelines';
 
 const academicStatuses = [
   'Undergraduate Student',
@@ -408,7 +408,7 @@ export default function CourseRegistrationPage() {
 
           <p className="mt-4 max-w-2xl text-slate-500">
             Complete your academic profile to begin enrollment in
-            Research Article Writing & Academic Publishing Masterclass.
+            Research Article Writing & Academic Publishing Guidelines.
             Submitting this form does not confirm enrollment.
           </p>
         </div>
@@ -422,7 +422,7 @@ export default function CourseRegistrationPage() {
                 </p>
 
                 <h2 className="mt-4 text-xl font-extrabold leading-7">
-                  Research Article Writing & Academic Publishing Masterclass
+                  Research Article Writing & Academic Publishing Guidelines
                 </h2>
 
                 <p className="mt-3 text-sm text-indigo-200">

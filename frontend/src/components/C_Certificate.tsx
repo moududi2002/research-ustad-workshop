@@ -119,7 +119,7 @@ export default function Certificate() {
                     <br />
 
                     <span className="font-semibold text-ink-700">
-                      Research Article Writing & Academic Publishing Masterclass
+                      Research Article Writing & Academic Publishing Guidelines
                     </span>
 
                     <br />
