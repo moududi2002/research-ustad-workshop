@@ -1,3 +1,4 @@
+
 // backend/src/course/batch-01/controllers/batch-01-payment.controller.ts
 
 import {
@@ -9,12 +10,10 @@ import {
   HttpStatus,
   Post,
   Query,
-  Req,
   Res,
 } from '@nestjs/common';
 
 import {
-  Request,
   Response,
 } from 'express';
 
@@ -50,7 +49,7 @@ export class Batch01PaymentController {
     );
   }
 
-  // Participant: verify payment from their registration session.
+  // Participant: verify payment.
   @Post('verify')
   @HttpCode(HttpStatus.OK)
   async verify(
@@ -60,7 +59,6 @@ export class Batch01PaymentController {
   }
 
   // Internal IPN receiver.
-  // Main Backend forwards PayStation IPN with HMAC headers.
   @Post('ipn')
   @HttpCode(HttpStatus.OK)
   async ipn(
@@ -76,7 +74,6 @@ export class Batch01PaymentController {
   // Browser callback from PayStation.
   @Get('callback')
   async callbackGet(
-    @Req() req: Request,
     @Res() res: Response,
     @Query('invoice_number') invoiceNumber?: string,
     @Query('invoiceNumber') invoiceNumberAlt?: string,
@@ -84,8 +81,6 @@ export class Batch01PaymentController {
     const invoice = String(
       invoiceNumber ||
       invoiceNumberAlt ||
-      req.query.invoice_number ||
-      req.query.invoiceNumber ||
       '',
     );
 
@@ -95,7 +90,7 @@ export class Batch01PaymentController {
     return res.redirect(303, redirectUrl);
   }
 
-  // Some gateway configurations may return callback by POST.
+  // POST callback support.
   @Post('callback')
   async callbackPost(
     @Body() body: any,

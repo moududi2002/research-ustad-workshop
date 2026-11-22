@@ -53,7 +53,9 @@ import {
   ],
 
   providers: [
+    // One MongoDB connection shared by all Batch-01 services.
     Batch01DatabaseService,
+
     Batch01SettingsService,
     Batch01RegistrationService,
     Batch01CouponService,
