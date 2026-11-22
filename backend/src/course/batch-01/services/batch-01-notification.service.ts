@@ -459,6 +459,89 @@ export class Batch01NotificationService {
     ]);
   }
 
+  
+  /**
+   * Send or resend payment receipt email.
+   * Used by Batch01AdminService.
+   */
+  async sendPaymentReceipt(
+    registration: Batch01Record,
+    force = false,
+  ) {
+    if (!registration.email) {
+      throw new Error('Participant email is missing');
+    }
+
+    if (!['paid', 'confirmed'].includes(registration.status)) {
+      throw new Error('Payment receipt is available only for paid registrations');
+    }
+
+    if (!force && registration.status !== 'confirmed') {
+      throw new Error('Registration must be confirmed');
+    }
+
+    try {
+      await this.sendEmail(registration);
+
+      await this.registrations.updateOne(
+        { _id: registration._id },
+        {
+          $set: {
+            'notifications.email': 'sent',
+            'notifications.emailAt': new Date(),
+          },
+          $unset: {
+            'notifications.emailError': '',
+          },
+        },
+      );
+    } catch (error: any) {
+      const reason = String(
+        error?.message || 'Payment receipt email failed',
+      ).slice(0, 300);
+
+      this.logger.error(
+        `Payment receipt email failed: ${reason}`,
+      );
+
+      await this.registrations.updateOne(
+        { _id: registration._id },
+        {
+          $set: {
+            'notifications.email': 'failed',
+            'notifications.emailError': reason,
+          },
+        },
+      );
+
+      throw error;
+    }
+  }
+
+  /**
+   * Send or resend enrollment confirmation email.
+   * Used by Batch01AdminService.
+   */
+  async sendEnrollmentConfirmation(
+    registration: Batch01Record,
+    force = false,
+  ) {
+    if (!registration.email) {
+      throw new Error('Participant email is missing');
+    }
+
+    if (registration.status !== 'confirmed') {
+      throw new Error('Registration is not confirmed');
+    }
+
+    if (!force && registration.status !== 'confirmed') {
+      throw new Error('Registration must be confirmed');
+    }
+
+    await this.sendPaymentReceipt(registration, true);
+  }
+
+
   async resendById(
     registrationId: string,
     channel: Channel,

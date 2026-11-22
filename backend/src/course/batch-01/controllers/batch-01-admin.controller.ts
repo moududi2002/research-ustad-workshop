@@ -1,3 +1,4 @@
+
 // backend/src/course/batch-01/controllers/batch-01-admin.controller.ts
 
 import {
@@ -9,7 +10,9 @@ import {
   UseGuards,
   Req,
 } from '@nestjs/common';
+
 import { Request } from 'express';
+
 import { JwtAuthGuard } from '../../../auth/jwt-auth.guard';
 import { Batch01AdminService } from '../services/batch-01-admin.service';
 
@@ -41,7 +44,9 @@ export class Batch01AdminController {
   }
 
   @Get('participants/:id')
-  getParticipant(@Param('id') id: string) {
+  getParticipant(
+    @Param('id') id: string,
+  ) {
     return this.adminService.getParticipant(id);
   }
 
@@ -58,13 +63,17 @@ export class Batch01AdminController {
     );
   }
 
-  @Post('participants/:id/resend-payment-email')
-  resendPaymentEmail(@Param('id') id: string) {
-    return this.adminService.resendPaymentEmail(id);
+  @Post('participants/:id/resend-enrollment-email')
+  resendEnrollmentEmail(
+    @Param('id') id: string,
+  ) {
+    return this.adminService.resendEnrollmentEmail(id);
   }
 
-  @Post('participants/:id/resend-enrollment-email')
-  resendEnrollmentEmail(@Param('id') id: string) {
-    return this.adminService.resendEnrollmentEmail(id);
+  @Post('participants/:id/resend-sms')
+  resendSms(
+    @Param('id') id: string,
+  ) {
+    return this.adminService.resendSms(id);
   }
 }
