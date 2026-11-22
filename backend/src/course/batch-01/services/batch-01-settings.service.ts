@@ -5,13 +5,11 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
-  OnModuleDestroy,
   OnModuleInit,
 } from '@nestjs/common';
 
 import {
   Collection,
-  MongoClient,
 } from 'mongodb';
 
 import {
@@ -23,70 +21,53 @@ import {
   Batch01Settings,
 } from '../types/batch-01-settings.interface';
 
+import {
+  Batch01DatabaseService,
+} from '../database/batch-01-database.service';
+
 @Injectable()
 export class Batch01SettingsService
-  implements OnModuleInit, OnModuleDestroy
+  implements OnModuleInit
 {
-  private mongo: MongoClient;
 
-  private settingsCollection: Collection<Batch01Settings>;
+    private settingsCollection!: Collection<Batch01Settings>;
 
-  async onModuleInit() {
-    const uri = process.env.COURSE_MONGODB_URI;
 
-    if (!uri) {
-      throw new Error(
-        'COURSE_MONGODB_URI is missing',
-      );
+    constructor(
+    private readonly databaseService: Batch01DatabaseService,
+  ) {}
+
+  async onModuleInit(): Promise<void> {
+  const database = this.databaseService.getDb();
+
+  this.settingsCollection =
+    database.collection<Batch01Settings>(
+      'course_settings',
+    );
+
+  await this.settingsCollection.createIndex(
+    { courseId: 1 },
+    { unique: true },
+  );
+
+  // Create default settings only once.
+  // Existing Admin settings must never be overwritten on restart.
+  await this.settingsCollection.updateOne(
+    {
+      courseId: BATCH_01_COURSE_ID,
+    },
+    {
+      $setOnInsert: BATCH_01_DEFAULTS,
+    },
+    {
+      upsert: true,
+    },
+  );
+
+  console.log(
+    '[Batch-01] Course settings initialized',
+  );
     }
-
-    // Connect to the existing Research Ustad course database.
-    this.mongo = new MongoClient(uri, {
-      serverSelectionTimeoutMS: 10000,
-      maxPoolSize: 5,
-    });
-
-    await this.mongo.connect();
-
-    const database = this.mongo.db(
-      process.env.COURSE_MONGODB_DATABASE ||
-        'research_ustad_courses',
-    );
-
-    this.settingsCollection =
-      database.collection<Batch01Settings>(
-        'course_settings',
-      );
-
-    await this.settingsCollection.createIndex(
-      { courseId: 1 },
-      { unique: true },
-    );
-
-    // Create default settings only once.
-    // Existing Admin settings must never be overwritten on restart.
-    await this.settingsCollection.updateOne(
-      {
-        courseId: BATCH_01_COURSE_ID,
-      },
-      {
-        $setOnInsert: BATCH_01_DEFAULTS,
-      },
-      {
-        upsert: true,
-      },
-    );
-
-    console.log(
-      '[Batch-01] Course settings initialized',
-    );
-  }
-
-  async onModuleDestroy() {
-    if (this.mongo) {
-      await this.mongo.close();
-    }
-  }
 
   // Get the stored settings document.
   async getSettings(): Promise<Batch01Settings> {

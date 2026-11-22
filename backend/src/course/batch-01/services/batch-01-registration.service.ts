@@ -7,7 +7,6 @@ import {
   GoneException,
   Injectable,
   NotFoundException,
-  OnModuleDestroy,
   OnModuleInit,
   ServiceUnavailableException,
   UnauthorizedException,
@@ -15,9 +14,12 @@ import {
 
 import {
   Collection,
-  MongoClient,
   ObjectId,
 } from 'mongodb';
+
+import {
+  Batch01DatabaseService,
+} from '../database/batch-01-database.service';
 
 import {
   createHash,
@@ -120,38 +122,19 @@ interface Batch01RegistrationRecord {
 
 @Injectable()
 export class Batch01RegistrationService
-  implements OnModuleInit, OnModuleDestroy
+  implements OnModuleInit
 {
-  private mongo: MongoClient;
 
-  private registrations:
-    Collection<Batch01RegistrationRecord>;
+
+ private registrations!: Collection<Batch01RegistrationRecord>;
 
   constructor(
-    private readonly settingsService:
-      Batch01SettingsService,
+    private readonly settingsService: Batch01SettingsService,
+    private readonly databaseService: Batch01DatabaseService,
   ) {}
 
-  async onModuleInit() {
-    const uri = process.env.COURSE_MONGODB_URI;
-
-    if (!uri) {
-      throw new Error(
-        'COURSE_MONGODB_URI is missing',
-      );
-    }
-
-    this.mongo = new MongoClient(uri, {
-      serverSelectionTimeoutMS: 10000,
-      maxPoolSize: 5,
-    });
-
-    await this.mongo.connect();
-
-    const database = this.mongo.db(
-      process.env.COURSE_MONGODB_DATABASE ||
-        'research_ustad_courses',
-    );
+  async onModuleInit(): Promise<void> {
+    const database = this.databaseService.getDb();
 
     this.registrations =
       database.collection<Batch01RegistrationRecord>(
@@ -184,7 +167,7 @@ export class Batch01RegistrationService
       createdAt: -1,
     });
 
-    // Useful for payment invoice lookup in the next phase.
+    // Unique payment invoice lookup.
     await this.registrations.createIndex(
       {
         invoiceNumber: 1,
@@ -210,11 +193,9 @@ export class Batch01RegistrationService
     );
   }
 
-  async onModuleDestroy() {
-    if (this.mongo) {
-      await this.mongo.close();
-    }
-  }
+
+
+
 
   // SHA-256 hash for registration access tokens.
   private hash(value: string): string {

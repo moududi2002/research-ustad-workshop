@@ -6,18 +6,20 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
-  OnModuleDestroy,
   OnModuleInit,
   UnauthorizedException,
 } from '@nestjs/common';
 
 import {
   Collection,
-  MongoClient,
   ObjectId,
 } from 'mongodb';
 
 import { createHash } from 'crypto';
+
+import {
+  Batch01DatabaseService,
+} from '../database/batch-01-database.service';
 
 import {
   BATCH_01_COURSE_ID,
@@ -62,77 +64,57 @@ interface CouponRegistration {
 
 @Injectable()
 export class Batch01CouponService
-  implements OnModuleInit, OnModuleDestroy
+  implements OnModuleInit
 {
-  private mongo: MongoClient;
+  
+  private coupons!: 
+    Collection<Batch01Coupon>;
 
-  private coupons: Collection<Batch01Coupon>;
-
-  private registrations:
+   private registrations!: 
     Collection<CouponRegistration>;
 
+  
+
   constructor(
-    private readonly settingsService:
-      Batch01SettingsService,
+    private readonly settingsService: Batch01SettingsService,
+    private readonly databaseService: Batch01DatabaseService,
   ) {}
 
-  async onModuleInit() {
-    const uri = process.env.COURSE_MONGODB_URI;
-
-    if (!uri) {
-      throw new Error(
-        'COURSE_MONGODB_URI is missing',
-      );
-    }
-
-    this.mongo = new MongoClient(uri, {
-      serverSelectionTimeoutMS: 10000,
-      maxPoolSize: 5,
-    });
-
-    await this.mongo.connect();
-
-    const database = this.mongo.db(
-      process.env.COURSE_MONGODB_DATABASE ||
-        'research_ustad_courses',
-    );
+  async onModuleInit(): Promise<void> {
+    const database = this.databaseService.getDb();
 
     this.coupons =
-      database.collection<Batch01Coupon>(
+        database.collection<Batch01Coupon>(
         'batch_01_coupons',
-      );
+        );
 
     this.registrations =
-      database.collection<CouponRegistration>(
+        database.collection<CouponRegistration>(
         'batch_01_registrations',
-      );
+        );
 
     await this.coupons.createIndex(
-      {
+        {
         courseId: 1,
         code: 1,
-      },
-      {
+        },
+        {
         unique: true,
-      },
+        },
     );
 
     await this.coupons.createIndex({
-      courseId: 1,
-      active: 1,
-      expiresAt: 1,
+        courseId: 1,
+        active: 1,
+        expiresAt: 1,
     });
 
     console.log(
-      '[Batch-01] Coupon collection initialized',
+        '[Batch-01] Coupon collection initialized',
     );
-  }
-
-  async onModuleDestroy() {
-    if (this.mongo) {
-      await this.mongo.close();
     }
-  }
+
+
 
   private hash(value: string): string {
     return createHash('sha256')
