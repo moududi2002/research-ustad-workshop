@@ -26,6 +26,9 @@ interface PaymentReceiptRecord {
   paidAt?: Date | string;
   confirmedAt?: Date | string;
   updatedAt?: Date | string;
+
+  courseName?: string;
+  batchName?: string;
 }
 
 @Injectable()
@@ -244,6 +247,13 @@ export class PaymentReceiptsService
     const email = this.escapeHtml(registration.email);
     const registrationId = this.escapeHtml(registration.registrationId);
     const courseId = this.escapeHtml(registration.courseId);
+    const courseName = this.escapeHtml(
+    registration.courseName || registration.courseId,
+    );
+
+  const batchName = this.escapeHtml(
+    registration.batchName || '',
+  );
     const invoiceNumber = this.escapeHtml(
       registration.invoiceNumber || 'Not available',
     );
@@ -476,8 +486,13 @@ export class PaymentReceiptsService
 
       <table>
         <tr>
-          <td>Course / Batch ID</td>
-          <td>${courseId}</td>
+          <td>Course / Batch</td>
+            <td>
+              ${courseName}
+              ${batchName ? ` — ${batchName}` : ''}
+              <br />
+              <small>${courseId}</small>
+            </td>
         </tr>
       </table>
     </section>

@@ -49,7 +49,7 @@ export default function Batch01PaymentVerifyingPage() {
         ) {
           setMessage('Payment successfully verified.');
 
-          router.replace(`${BASE}/checkout`);
+          router.replace(`${BASE}/confirmation`);
           return;
         }
 

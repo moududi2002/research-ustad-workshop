@@ -1,6 +1,9 @@
 // frontend/src/app/api/batch-01/[action]/route.ts
 
-import { NextRequest, NextResponse } from 'next/server';
+import {
+  NextRequest,
+  NextResponse,
+} from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,45 +14,67 @@ const BACKEND_URL = (
   'http://127.0.0.1:4000'
 ).replace(/\/$/, '');
 
-const ACTIONS: Record<string, {
+type ActionConfig = {
   method: 'GET' | 'POST';
   backendPath: string;
   requiresSession?: boolean;
   createsSession?: boolean;
-}> = {
+  responseType?: 'json' | 'pdf';
+};
+
+const ACTIONS: Record<string, ActionConfig> = {
   settings: {
     method: 'GET',
     backendPath: 'course/batch-01/settings',
   },
+
   register: {
     method: 'POST',
     backendPath: 'course/batch-01/register',
     createsSession: true,
   },
+
   status: {
     method: 'GET',
     backendPath: 'course/batch-01/status',
     requiresSession: true,
   },
+
   'coupon-apply': {
     method: 'POST',
     backendPath: 'course/batch-01/coupon/apply',
     requiresSession: true,
   },
+
   'coupon-remove': {
     method: 'POST',
     backendPath: 'course/batch-01/coupon/remove',
     requiresSession: true,
   },
+
   initiate: {
     method: 'POST',
     backendPath: 'course/batch-01/initiate',
     requiresSession: true,
   },
+
   verify: {
     method: 'POST',
     backendPath: 'course/batch-01/verify',
     requiresSession: true,
+  },
+
+  confirm: {
+    method: 'POST',
+    backendPath: 'course/batch-01/confirm',
+    requiresSession: true,
+  },
+
+  receipt: {
+    method: 'GET',
+    backendPath: 'course/batch-01/receipt',
+    requiresSession: true,
+    responseType: 'pdf',
   },
 };
 
@@ -73,8 +98,10 @@ async function handleRequest(
     );
   }
 
+  // Same-origin protection for POST requests.
   if (request.method === 'POST') {
     const origin = request.headers.get('origin');
+
     const siteUrl =
       process.env.COURSE_SITE_URL ||
       'https://workshop.researchustad.org';
@@ -109,22 +136,55 @@ async function handleRequest(
       {
         method: config.method,
         headers: {
-          Accept: 'application/json',
+          Accept:
+            config.responseType === 'pdf'
+              ? 'application/pdf'
+              : 'application/json',
+
           ...(config.method === 'POST'
             ? { 'Content-Type': 'application/json' }
             : {}),
+
           ...(config.requiresSession && accessToken
             ? { 'x-course-access': accessToken }
             : {}),
         },
+
         body:
           config.method === 'POST'
             ? JSON.stringify(await request.json())
             : undefined,
+
         cache: 'no-store',
         signal: AbortSignal.timeout(30000),
       },
     );
+
+    // Preserve the PDF response as binary data.
+    if (config.responseType === 'pdf') {
+      if (!upstream.ok) {
+        const errorData = await upstream.json().catch(() => ({
+          message: 'Unable to generate payment receipt',
+        }));
+
+        return NextResponse.json(errorData, {
+          status: upstream.status,
+        });
+      }
+
+      const buffer = await upstream.arrayBuffer();
+
+      return new NextResponse(buffer, {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/pdf',
+          'Content-Disposition':
+            upstream.headers.get('content-disposition') ||
+            'attachment; filename="Research-Ustad-Receipt.pdf"',
+          'Cache-Control': 'no-store',
+        },
+      });
+    }
 
     const data = await upstream.json().catch(() => ({
       message: 'Unexpected response from Batch-01 backend',
@@ -136,6 +196,7 @@ async function handleRequest(
       });
     }
 
+    // Registration creates a new HttpOnly session cookie.
     if (config.createsSession) {
       const {
         accessToken: newToken,
@@ -177,7 +238,9 @@ async function handleRequest(
     );
 
     return NextResponse.json(
-      { message: 'Batch-01 backend is temporarily unavailable' },
+      {
+        message: 'Batch-01 backend is temporarily unavailable',
+      },
       { status: 502 },
     );
   }

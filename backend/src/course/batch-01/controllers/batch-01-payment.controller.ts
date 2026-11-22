@@ -1,4 +1,3 @@
-
 // backend/src/course/batch-01/controllers/batch-01-payment.controller.ts
 
 import {
@@ -13,25 +12,19 @@ import {
   Res,
 } from '@nestjs/common';
 
-import {
-  Response,
-} from 'express';
+import { Response } from 'express';
 
-import {
-  Batch01PaymentService,
-} from '../services/batch-01-payment.service';
-
-import {
-  verifySharedIpn,
-} from '../../shared-ipn-auth';
+import { Batch01PaymentService } from '../services/batch-01-payment.service';
+import { Batch01ConfirmationService } from '../services/batch-01-confirmation.service';
+import { verifySharedIpn } from '../../shared-ipn-auth';
 
 @Controller('course/batch-01')
 export class Batch01PaymentController {
   constructor(
     private readonly paymentService: Batch01PaymentService,
+    private readonly confirmationService: Batch01ConfirmationService,
   ) {}
 
-  // Participant: initiate payment.
   @Post('initiate')
   @HttpCode(HttpStatus.OK)
   async initiate(
@@ -49,13 +42,48 @@ export class Batch01PaymentController {
     );
   }
 
-  // Participant: verify payment.
   @Post('verify')
   @HttpCode(HttpStatus.OK)
   async verify(
     @Headers('x-course-access') token: string,
   ) {
     return this.paymentService.verify(token);
+  }
+
+  // Participant confirms after PayStation payment verification.
+  @Post('confirm')
+  @HttpCode(HttpStatus.OK)
+  async confirm(
+    @Headers('x-course-access') token: string,
+    @Body() body: {
+      termsAccepted: boolean;
+    },
+  ) {
+    return this.confirmationService.confirmByAccessToken(
+      token,
+      body?.termsAccepted,
+    );
+  }
+
+  // Participant downloads their own confirmed payment receipt.
+  @Get('receipt')
+  async downloadReceipt(
+    @Headers('x-course-access') token: string,
+    @Res() res: Response,
+  ) {
+    const { buffer, filename } =
+      await this.confirmationService.generateParticipantReceipt(
+        token,
+      );
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="${filename}"`,
+    );
+    res.setHeader('Content-Length', buffer.length);
+
+    return res.send(buffer);
   }
 
   // Internal IPN receiver.
@@ -71,7 +99,7 @@ export class Batch01PaymentController {
     return this.paymentService.handleIpn(body);
   }
 
-  // Browser callback from PayStation.
+  // PayStation browser callback.
   @Get('callback')
   async callbackGet(
     @Res() res: Response,
@@ -79,9 +107,7 @@ export class Batch01PaymentController {
     @Query('invoiceNumber') invoiceNumberAlt?: string,
   ) {
     const invoice = String(
-      invoiceNumber ||
-      invoiceNumberAlt ||
-      '',
+      invoiceNumber || invoiceNumberAlt || '',
     );
 
     const redirectUrl =
@@ -90,16 +116,13 @@ export class Batch01PaymentController {
     return res.redirect(303, redirectUrl);
   }
 
-  // POST callback support.
   @Post('callback')
   async callbackPost(
     @Body() body: any,
     @Res() res: Response,
   ) {
     const invoice = String(
-      body?.invoice_number ||
-      body?.invoiceNumber ||
-      '',
+      body?.invoice_number || body?.invoiceNumber || '',
     );
 
     const redirectUrl =

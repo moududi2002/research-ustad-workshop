@@ -110,10 +110,10 @@ interface Batch01RegistrationRecord {
 
   refundPolicyAccepted?: boolean;
 
-  notifications: {
-    email: 'pending' | 'sent' | 'failed';
-    sms: 'pending' | 'sent' | 'failed';
-  };
+ notifications: {
+  email: 'pending' | 'sending' | 'sent' | 'failed';
+  sms: 'pending' | 'sending' | 'sent' | 'failed';
+};
 
   createdAt: Date;
 
@@ -433,52 +433,70 @@ export class Batch01RegistrationService
   }
 
   // Return safe registration status without exposing accessHash.
+  
   async getStatus(accessToken?: string) {
-    const registration =
-      await this.authorized(accessToken);
+    const registration = await this.authorized(accessToken);
+
+    const rawGroupUrl = String(
+      process.env.BATCH_01_WHATSAPP_GROUP_URL || '',
+    ).trim();
+
+    let whatsappGroupUrl: string | null = null;
+
+    try {
+      const url = new URL(rawGroupUrl);
+
+      if (
+        url.protocol === 'https:' &&
+        url.hostname === 'chat.whatsapp.com'
+      ) {
+        whatsappGroupUrl = url.toString();
+      }
+    } catch {
+      whatsappGroupUrl = null;
+    }
 
     return {
-      registrationId:
-        registration.registrationId,
+      registrationId: registration.registrationId,
 
       courseId: registration.courseId,
+
+      fullName: registration.fullName,
+
+      email: registration.email,
+
+      whatsapp: registration.whatsapp,
 
       status: registration.status,
 
       amount: registration.amount,
 
-      originalAmount:
-        registration.originalAmount,
+      originalAmount: registration.originalAmount,
 
       pricingType: registration.pricingType,
 
-      couponCode:
-        registration.couponCode || null,
+      couponCode: registration.couponCode || null,
 
-      discountAmount:
-        registration.discountAmount || 0,
+      discountAmount: registration.discountAmount || 0,
 
-      invoiceNumber:
-        registration.invoiceNumber || null,
+      invoiceNumber: registration.invoiceNumber || null,
 
       paymentUrl:
         registration.status === 'pending'
           ? registration.paymentUrl || null
           : null,
 
-      transactionId:
-        registration.transactionId || null,
+      transactionId: registration.transactionId || null,
 
-      paymentMethod:
-        registration.paymentMethod || null,
+      paymentMethod: registration.paymentMethod || null,
 
       paidAt: registration.paidAt || null,
 
-      confirmedAt:
-        registration.confirmedAt || null,
+      confirmedAt: registration.confirmedAt || null,
 
-      notifications:
-        registration.notifications,
+      notifications: registration.notifications,
+
+      whatsappGroupUrl,
     };
   }
 }

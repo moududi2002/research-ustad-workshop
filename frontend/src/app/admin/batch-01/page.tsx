@@ -397,6 +397,14 @@ export default function Batch01AdminPage() {
           >
             Back to Admin
           </Link>
+            <div>
+                <a
+                    href="/admin/batch-01/participants"
+                    className="inline-flex items-center rounded-lg bg-[#3A5A78] px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+                    >
+                    Manage Participants
+                </a>
+            </div>
         </div>
       </header>
 
