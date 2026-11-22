@@ -9,13 +9,13 @@ import Footer from '@/components/Footer';
 import AdminGuard from '@/components/AdminGuard';
 import {
   FiUsers,
-  FiUserPlus,
   FiDownload,
   FiSearch,
   FiFilter,
   FiMail,
   FiSend,
   FiLogOut,
+  FiUserPlus,
 } from 'react-icons/fi';
 import { HiOutlineChartBar } from 'react-icons/hi2';
 import toast from 'react-hot-toast';
@@ -193,6 +193,15 @@ function AdminDashboard() {
             >
               <FiUsers className="h-4 w-4" />
               Course Participants
+            </button>
+
+            <button
+              type="button"
+              onClick={() => router.push('/admin/batch-01')}
+              className="btn-secondary !py-2.5 !text-sm"
+            >
+              <FiUserPlus className="h-4 w-4" />
+              Batch-01 Management
             </button>
 
             {/* Existing CSV Export */}
