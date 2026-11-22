@@ -45,4 +45,30 @@ export class Batch01RegistrationController {
       accessToken,
     );
   }
+
+  @Post('resume/request')
+    @HttpCode(HttpStatus.OK)
+    async requestResume(
+      @Body('email') email: string,
+    ) {
+      return this.registrationService.requestResume(email);
+    }
+
+    /**
+     * Verify resume OTP and restore registration access.
+     */
+    @Post('resume/verify')
+    @HttpCode(HttpStatus.OK)
+    async verifyResume(
+      @Body() body: {
+        email: string;
+        code: string;
+      },
+    ) {
+      return this.registrationService.verifyResume(
+        body?.email,
+        body?.code,
+      );
+    }
+
 }

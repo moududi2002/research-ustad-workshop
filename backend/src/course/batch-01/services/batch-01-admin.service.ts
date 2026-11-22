@@ -1,5 +1,5 @@
 
- // backend/src/course/batch-01/services/batch-01-admin.service.ts
+// backend/src/course/batch-01/services/batch-01-admin.service.ts
 
 import {
   BadRequestException,
@@ -30,9 +30,35 @@ export class Batch01AdminService {
       .collection('batch_01_registrations');
   }
 
-  /**
-   * Get participants with pagination and search
-   */
+  private validateId(id: string): ObjectId {
+    if (!ObjectId.isValid(id)) {
+      throw new BadRequestException('Invalid participant ID');
+    }
+
+    return new ObjectId(id);
+  }
+
+  private async findParticipantById(id: string) {
+    const participant = await this.registrations.findOne(
+      {
+        _id: this.validateId(id),
+        courseId: BATCH_01_COURSE_ID,
+      },
+      {
+        projection: {
+          accessHash: 0,
+          resumeOtpHash: 0,
+        },
+      },
+    );
+
+    if (!participant) {
+      throw new NotFoundException('Participant not found');
+    }
+
+    return participant;
+  }
+
   async getParticipants(query: {
     search?: string;
     status?: string;
@@ -86,6 +112,7 @@ export class Batch01AdminService {
         .find(filter, {
           projection: {
             accessHash: 0,
+            resumeOtpHash: 0,
           },
         })
         .sort({ createdAt: -1 })
@@ -106,29 +133,8 @@ export class Batch01AdminService {
     };
   }
 
-  /**
-   * Get one participant
-   */
   async getParticipant(id: string) {
-    if (!ObjectId.isValid(id)) {
-      throw new BadRequestException('Invalid participant ID');
-    }
-
-    const participant = await this.registrations.findOne(
-      {
-        _id: new ObjectId(id),
-        courseId: BATCH_01_COURSE_ID,
-      },
-      {
-        projection: {
-          accessHash: 0,
-        },
-      },
-    );
-
-    if (!participant) {
-      throw new NotFoundException('Participant not found');
-    }
+    const participant = await this.findParticipantById(id);
 
     return {
       success: true,
@@ -136,9 +142,6 @@ export class Batch01AdminService {
     };
   }
 
-  /**
-   * Dashboard statistics
-   */
   async getStats() {
     const courseFilter = {
       courseId: BATCH_01_COURSE_ID,
@@ -203,22 +206,12 @@ export class Batch01AdminService {
     };
   }
 
-  /**
-   * Dashboard alias
-   */
   async getDashboard() {
     return this.getStats();
   }
 
-  /**
-   * Admin manually confirms a paid registration
-   *
-   * Uses the same confirmation workflow as participant confirmation.
-   */
   async confirmEnrollment(id: string, adminId: string) {
-    if (!ObjectId.isValid(id)) {
-      throw new BadRequestException('Invalid participant ID');
-    }
+    this.validateId(id);
 
     return this.confirmationService.confirmById(
       id,
@@ -227,55 +220,12 @@ export class Batch01AdminService {
   }
 
   /**
-   * Resend payment receipt email
-   */
-  async resendPaymentEmail(id: string) {
-    if (!ObjectId.isValid(id)) {
-      throw new BadRequestException('Invalid participant ID');
-    }
-
-    const participant = await this.registrations.findOne({
-      _id: new ObjectId(id),
-      courseId: BATCH_01_COURSE_ID,
-    });
-
-    if (!participant) {
-      throw new NotFoundException('Participant not found');
-    }
-
-    if (!['paid', 'confirmed'].includes(participant.status)) {
-      throw new ConflictException(
-        'Payment email is available only for paid registrations',
-      );
-    }
-
-    await this.notificationService.sendPaymentReceipt(
-      participant,
-      true,
-    );
-
-    return {
-      success: true,
-      message: 'Payment receipt email resend requested',
-    };
-  }
-
-  /**
-   * Resend enrollment confirmation email
+   * The existing Batch01NotificationService sends the
+   * enrollment confirmation email with PDF attachment.
+   * It does not have a separate payment-only email method.
    */
   async resendEnrollmentEmail(id: string) {
-    if (!ObjectId.isValid(id)) {
-      throw new BadRequestException('Invalid participant ID');
-    }
-
-    const participant = await this.registrations.findOne({
-      _id: new ObjectId(id),
-      courseId: BATCH_01_COURSE_ID,
-    });
-
-    if (!participant) {
-      throw new NotFoundException('Participant not found');
-    }
+    const participant = await this.findParticipantById(id);
 
     if (participant.status !== 'confirmed') {
       throw new ConflictException(
@@ -283,33 +233,14 @@ export class Batch01AdminService {
       );
     }
 
-    await this.notificationService.sendEnrollmentConfirmation(
-      participant,
-      true,
+    return this.notificationService.resendById(
+      participant.registrationId,
+      'email',
     );
-
-    return {
-      success: true,
-      message: 'Enrollment confirmation email resend requested',
-    };
   }
 
-  /**
-   * Resend SMS
-   */
   async resendSms(id: string) {
-    if (!ObjectId.isValid(id)) {
-      throw new BadRequestException('Invalid participant ID');
-    }
-
-    const participant = await this.registrations.findOne({
-      _id: new ObjectId(id),
-      courseId: BATCH_01_COURSE_ID,
-    });
-
-    if (!participant) {
-      throw new NotFoundException('Participant not found');
-    }
+    const participant = await this.findParticipantById(id);
 
     if (participant.status !== 'confirmed') {
       throw new ConflictException(
@@ -317,14 +248,9 @@ export class Batch01AdminService {
       );
     }
 
-    await this.notificationService.resendById(
+    return this.notificationService.resendById(
       participant.registrationId,
       'sms',
     );
-
-    return {
-      success: true,
-      message: 'SMS resend requested',
-    };
   }
 }
