@@ -48,8 +48,23 @@ const programs = [
     badge: 'Coming Soon',
     lessons: 'To Be Announced',
   },
+
   {
     number: '01',
+    category: 'Course',
+    title: 'Research Foundation Course-2026',
+    subtitle: 'Build Your Research Foundation',
+    description:
+      'A beginner-friendly research training program covering research fundamentals, methodology, academic writing, publication awareness, and higher-study preparation.',
+    icon: HiOutlineAcademicCap,
+    href: '/research-foundation-course-2026',
+    featured: true,
+    available: true,
+    badge: 'Batch-01 · Enrollment',
+    lessons: '5 Weekly Live Sessions',
+  },
+  {
+    number: '02',
     category: 'Course',
     title: 'Research Article Writing & Academic Publishing Guidelines',
     subtitle: 'From Research Fundamentals to Journal Submission',
@@ -63,7 +78,7 @@ const programs = [
     lessons: '24 Classes · 8 Modules',
   },
   {
-    number: '02',
+    number: '03',
     category: 'Course',
     title: 'Advanced Research Training',
     subtitle: 'A future Research Ustad program',
