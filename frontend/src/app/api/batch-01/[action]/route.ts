@@ -34,6 +34,17 @@ const ACTIONS: Record<string, ActionConfig> = {
     createsSession: true,
   },
 
+    'resume-request': {
+    method: 'POST',
+    backendPath: 'course/batch-01/resume/request',
+  },
+
+  'resume-verify': {
+    method: 'POST',
+    backendPath: 'course/batch-01/resume/verify',
+    createsSession: true,
+  },
+
   status: {
     method: 'GET',
     backendPath: 'course/batch-01/status',
@@ -104,7 +115,7 @@ async function handleRequest(
 
     const siteUrl =
       process.env.COURSE_SITE_URL ||
-      'https://workshop.researchustad.org';
+      request.nextUrl.origin;;
 
     if (
       origin &&
@@ -149,6 +160,20 @@ async function handleRequest(
             ? { 'x-course-access': accessToken }
             : {}),
         },
+
+
+          // Forward limited device metadata only during registration.
+          ...(action === 'register'
+            ? {
+                'user-agent': (
+                  request.headers.get('user-agent') || ''
+                ).slice(0, 512),
+
+                'x-real-ip': (
+                  request.headers.get('x-real-ip') || ''
+                ).slice(0, 64),
+              }
+            : {}),
 
         body:
           config.method === 'POST'

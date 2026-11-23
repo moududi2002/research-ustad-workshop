@@ -114,10 +114,11 @@ interface Batch01RegistrationRecord {
   prePaymentTermsAccepted?: boolean;
 
   refundPolicyAccepted?: boolean;
-
+   
  notifications: {
-  email: 'pending' | 'sending' | 'sent' | 'failed';
-  sms: 'pending' | 'sending' | 'sent' | 'failed';
+    email: 'pending' | 'sending' | 'sent' | 'failed';
+    sms: 'pending' | 'sending' | 'sent' | 'failed';
+  };
 
   resumeOtpHash?: string;
 
@@ -126,12 +127,20 @@ interface Batch01RegistrationRecord {
   resumeOtpRequestedAt?: Date;
 
   resumeOtpAttempts?: number;
-};
+
+  deviceInfo?: {
+    type: string;
+    browser: string;
+    os: string;
+    network: string;
+    userAgent: string;
+  };
 
   createdAt: Date;
-
   updatedAt: Date;
-}
+};
+
+
 
 @Injectable()
 export class Batch01RegistrationService
@@ -240,6 +249,58 @@ export class Batch01RegistrationService
     );
   }
 
+  // Same device summary as Course-One. IPv4/IPv6 is masked before saving.
+  private describeRegistrationDevice(input?: {
+    userAgent?: string;
+    network?: string;
+  }): NonNullable<Batch01RegistrationRecord['deviceInfo']> {
+    const ua = String(input?.userAgent || '').slice(0, 512);
+    const rawNetwork = String(input?.network || '').trim().slice(0, 64);
+
+    let network = 'Unavailable';
+
+    const ipv4 = rawNetwork.split('.');
+
+    if (
+      ipv4.length === 4 &&
+      ipv4.every((part) => /^\d{1,3}$/.test(part) && Number(part) <= 255)
+    ) {
+      network = `${ipv4.slice(0, 3).join('.')}.xxx`;
+    } else if (
+      rawNetwork.includes(':') &&
+      /^[0-9a-f:.]+$/i.test(rawNetwork)
+    ) {
+      network = `${rawNetwork.split(':').slice(0, 3).join(':')}:…`;
+    }
+
+    const browser =
+      /Edg\//.test(ua) ? 'Microsoft Edge'
+      : /OPR\//.test(ua) ? 'Opera'
+      : /SamsungBrowser\//.test(ua) ? 'Samsung Internet'
+      : /CriOS\//.test(ua) ? 'Chrome iOS'
+      : /FxiOS\//.test(ua) ? 'Firefox iOS'
+      : /Firefox\//.test(ua) ? 'Firefox'
+      : /Chrome\//.test(ua) ? 'Chrome'
+      : /Safari\//.test(ua) ? 'Safari'
+      : 'Unknown';
+
+    const os =
+      /Windows NT/.test(ua) ? 'Windows'
+      : /iPad|iPhone|iPod/.test(ua) ? 'iOS / iPadOS'
+      : /Android/.test(ua) ? 'Android'
+      : /Mac OS X|Macintosh/.test(ua) ? 'macOS'
+      : /Linux/.test(ua) ? 'Linux'
+      : 'Unknown';
+
+    const type =
+      /iPad|Tablet|Android(?!.*Mobile)/i.test(ua) ? 'Tablet'
+      : /Mobile|iPhone|iPod/i.test(ua) ? 'Mobile'
+      : ua ? 'Desktop'
+      : 'Unknown';
+
+    return { type, browser, os, network, userAgent: ua || 'Unavailable' };
+  }
+
   // Check registration availability before creating a record.
   private async ensureRegistrationOpen() {
     const settings =
@@ -267,6 +328,11 @@ export class Batch01RegistrationService
   // Create a new Batch-01 registration.
   async register(
     dto: Batch01RegistrationDto,
+      device?: {
+      userAgent?: string;
+      network?: string;
+    },
+
   ) {
     if (dto.consent !== true) {
       throw new BadRequestException(
@@ -365,6 +431,8 @@ export class Batch01RegistrationService
           : 'sandbox',
 
       discountAmount: 0,
+
+      deviceInfo: this.describeRegistrationDevice(device),
 
       notifications: {
         email: 'pending',
@@ -511,22 +579,23 @@ export class Batch01RegistrationService
 
       whatsappGroupUrl,
     };
-    private normalizeResumeEmail(input: unknown): string {
-    const email = String(input || '')
-      .trim()
-      .toLowerCase();
-
-    if (
-      email.length > 254 ||
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-    ) {
-      throw new BadRequestException(
-        'Please enter a valid email address',
-      );
-    }
-
-    return email;
   }
+    private normalizeResumeEmail(input: unknown): string {
+      const email = String(input || '')
+        .trim()
+        .toLowerCase();
+
+      if (
+        email.length > 254 ||
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+      ) {
+        throw new BadRequestException(
+          'Please enter a valid email address',
+        );
+      }
+
+      return email;
+    }
 
   /**
    * Generate secure OTP hash.
@@ -857,5 +926,5 @@ export class Batch01RegistrationService
         'Registration access restored successfully',
     };
   }
-  }
 }
+

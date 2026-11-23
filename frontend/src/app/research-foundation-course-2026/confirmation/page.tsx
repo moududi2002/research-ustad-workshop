@@ -340,7 +340,11 @@ export default function Batch01ConfirmationPage() {
               />
 
               <DetailRow
-                label="Registration ID"
+                label={
+                  confirmed
+                    ? 'Registration ID'
+                    : 'Temporary Reference ID'
+                }
                 value={registration.registrationId}
               />
 

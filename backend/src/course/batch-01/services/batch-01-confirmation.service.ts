@@ -104,59 +104,95 @@ export class Batch01ConfirmationService {
       );
     }
 
-    if (registration.status === 'paid') {
-      // Atomic counter: RU-RFC01-0001, RU-RFC01-0002, ...
-      const counter = await this.counters.findOneAndUpdate(
-        { _id: 'RU-RFC01' },
-        {
-          $inc: {
-            seq: 1,
-          },
-        },
-        {
-          upsert: true,
-          returnDocument: 'after',
-        },
-      );
+        if (registration.status === 'paid') {
+      const session =
+        this.databaseService.getClient().startSession();
 
-      if (!counter) {
-        throw new ServiceUnavailableException(
-          'Unable to generate official registration ID',
+      try {
+        await session.withTransaction(
+          async () => {
+            // Always read the latest record inside the transaction.
+            const current = await this.registrations.findOne(
+              {
+                _id: registration._id,
+                courseId: BATCH_01_COURSE_ID,
+              },
+              { session },
+            );
+
+            if (!current) {
+              throw new NotFoundException(
+                'Registration not found',
+              );
+            }
+
+            // Idempotent: never allocate another serial.
+            if (current.status === 'confirmed') {
+              return;
+            }
+
+            if (current.status !== 'paid') {
+              throw new ConflictException(
+                'Payment must be verified before registration confirmation',
+              );
+            }
+
+            // Serial counter saved in MongoDB:
+            // RU-RFC01-0001, RU-RFC01-0002, ...
+            // If anything below fails, the increment rolls back,
+            // so no serial number is ever skipped.
+            const counter = await this.counters.findOneAndUpdate(
+              { _id: 'RU-RFC01' },
+              { $inc: { seq: 1 } },
+              {
+                upsert: true,
+                returnDocument: 'after',
+                session,
+              },
+            );
+
+            if (!counter) {
+              throw new ServiceUnavailableException(
+                'Unable to generate official registration ID',
+              );
+            }
+
+            const serial = String(counter.seq).padStart(4, '0');
+            const officialId = `RU-RFC01-${serial}`;
+            const now = new Date();
+
+            const result = await this.registrations.updateOne(
+              {
+                _id: current._id,
+                courseId: BATCH_01_COURSE_ID,
+                status: 'paid',
+              },
+              {
+                $set: {
+                  registrationId: officialId,
+                  status: 'confirmed',
+                  confirmedAt: now,
+                  confirmedBy,
+                  updatedAt: now,
+                },
+              },
+              { session },
+            );
+
+            if (result.modifiedCount !== 1) {
+              throw new ConflictException(
+                'Registration confirmation failed. Refresh and try again.',
+              );
+            }
+          },
+          {
+            readConcern: { level: 'snapshot' },
+            writeConcern: { w: 'majority' },
+            readPreference: 'primary',
+          },
         );
-      }
-
-      const serial = String(counter.seq).padStart(4, '0');
-      const officialId = `RU-RFC01-${serial}`;
-      const now = new Date();
-
-      const result = await this.registrations.updateOne(
-        {
-          _id: registration._id,
-          courseId: BATCH_01_COURSE_ID,
-          status: 'paid',
-        },
-        {
-          $set: {
-            registrationId: officialId,
-            status: 'confirmed',
-            confirmedAt: now,
-            confirmedBy,
-            updatedAt: now,
-          },
-        },
-      );
-
-      if (result.modifiedCount !== 1) {
-        // Another request may have confirmed it concurrently.
-        const latest = await this.registrations.findOne({
-          _id: registration._id,
-        });
-
-        if (!latest || latest.status !== 'confirmed') {
-          throw new ConflictException(
-            'Registration confirmation failed. Refresh and try again.',
-          );
-        }
+      } finally {
+        await session.endSession();
       }
     }
 

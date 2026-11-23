@@ -9,7 +9,10 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Req,
 } from '@nestjs/common';
+
+import { Request } from 'express';
 
 import {
   Batch01RegistrationDto,
@@ -27,13 +30,22 @@ export class Batch01RegistrationController {
   ) {}
 
   // Create a new Batch-01 registration.
-  @Post('register')
-  @HttpCode(HttpStatus.CREATED)
-  async register(
-    @Body() dto: Batch01RegistrationDto,
-  ) {
-    return this.registrationService.register(dto);
-  }
+    @Post('register')
+    @HttpCode(HttpStatus.CREATED)
+    async register(
+      @Body() dto: Batch01RegistrationDto,
+      @Req() req: Request,
+    ) {
+      return this.registrationService.register(dto, {
+        userAgent: String(
+          req.headers['user-agent'] || '',
+        ).slice(0, 512),
+
+        network: String(
+          req.headers['x-real-ip'] || '',
+        ).slice(0, 64),
+      });
+    }
 
   // Get current registration and payment status.
   @Get('status')

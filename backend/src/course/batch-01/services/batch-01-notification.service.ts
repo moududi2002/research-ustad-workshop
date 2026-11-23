@@ -20,7 +20,7 @@ type DeliveryStatus =
   | 'sent'
   | 'failed';
 
-interface Batch01Record {
+export interface Batch01Record {
   _id: ObjectId;
   registrationId: string;
   courseId: string;

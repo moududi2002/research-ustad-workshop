@@ -51,11 +51,14 @@ const countries = [
   'Sweden',
   'Norway',
   'Finland',
+  'Denmark',
   'Japan',
   'South Korea',
   'China',
   'Singapore',
   'Malaysia',
+  'Saudi Arabia',
+  'UAE',
   'Other',
 ];
 
@@ -95,6 +98,10 @@ export default function Batch01RegistrationPage() {
 
   const [loading, setLoading] = useState(false);
   const [settings, setSettings] = useState<Settings | null>(null);
+  const [resumeEmail, setResumeEmail] = useState('');
+  const [resumeOtp, setResumeOtp] = useState('');
+  const [resumeInput, setResumeInput] = useState('');
+  const [resumeLoading, setResumeLoading] = useState(false);
 
   const [form, setForm] = useState({
     fullName: '',
@@ -127,11 +134,102 @@ export default function Batch01RegistrationPage() {
     }));
   }
 
+  async function requestResumeOtp(emailInput: string) {
+    const email = emailInput.trim().toLowerCase();
+
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toast.error('Enter a valid registered email address');
+      return;
+    }
+
+    setResumeLoading(true);
+
+    try {
+      const response = await fetch('/api/batch-01/resume-request', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(
+          Array.isArray(result.message)
+            ? result.message.join(', ')
+            : result.message || 'Unable to send verification code',
+        );
+      }
+
+      setResumeEmail(email);
+      setResumeOtp('');
+
+      toast.success('Check your email for a verification code');
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : 'Unable to send verification code',
+      );
+    } finally {
+      setResumeLoading(false);
+    }
+  }
+
+  async function verifyResumeOtp() {
+    if (!/^\d{6}$/.test(resumeOtp)) {
+      toast.error('Please enter the six-digit OTP');
+      return;
+    }
+
+    setResumeLoading(true);
+
+    try {
+      const response = await fetch('/api/batch-01/resume-verify', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: resumeEmail,
+          code: resumeOtp,
+        }),
+      });
+
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(
+          Array.isArray(result.message)
+            ? result.message.join(', ')
+            : result.message || 'OTP verification failed',
+        );
+      }
+
+      // The proxy has now set a new HttpOnly session cookie.
+      toast.success('Registration session restored');
+      router.replace(`${BASE}/checkout`);
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : 'Verification failed',
+      );
+    } finally {
+      setResumeLoading(false);
+    }
+  }
+
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (!form.consent) {
       toast.error('Please accept the registration declaration');
+      return;
+    }
+
+    if (form.higherStudyInterest === 'Yes' && !form.preferredCountry) {
+      toast.error('Please select your preferred country');
       return;
     }
 
@@ -148,6 +246,13 @@ export default function Batch01RegistrationPage() {
       });
 
       const result = await response.json().catch(() => ({}));
+
+      // Existing email: do not create another registration.
+      // Verify ownership by sending an OTP.
+      if (response.status === 409) {
+        await requestResumeOtp(form.email);
+        return;
+      }
 
       if (!response.ok) {
         const message = Array.isArray(result.message)
@@ -173,6 +278,102 @@ export default function Batch01RegistrationPage() {
   }
 
   const isOpen = settings?.registration?.isOpen ?? false;
+
+    if (resumeEmail) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-[#F5F8FB] px-4 py-12">
+        <div className="w-full max-w-lg overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl">
+          <div className="bg-[#3A5A78] px-8 py-10 text-center text-white">
+            <p className="text-sm font-medium uppercase tracking-widest text-white/70">
+              Research Ustad · Batch-01
+            </p>
+
+            <h1 className="mt-3 text-2xl font-extrabold sm:text-3xl">
+              Resume Your Registration
+            </h1>
+
+            <p className="mt-3 text-sm leading-7 text-white/80">
+              This email has an existing registration.
+              Verify your identity to securely continue.
+            </p>
+          </div>
+
+          <div className="space-y-6 p-7 sm:p-9">
+            <div className="rounded-xl border border-slate-200 bg-[#F5F8FB] p-4 text-center">
+              <p className="text-xs font-semibold uppercase tracking-wider text-[#3A5A78]">
+                Verification Email
+              </p>
+
+              <p className="mt-2 break-all font-bold text-slate-900">
+                {resumeEmail}
+              </p>
+
+              <p className="mt-2 text-xs leading-6 text-slate-500">
+                Enter the six-digit code sent to your inbox.
+                The code expires after 10 minutes.
+              </p>
+            </div>
+
+            <div>
+              <label
+                htmlFor="batch01ResumeOtp"
+                className="mb-2 block text-sm font-semibold text-slate-700"
+              >
+                Six-Digit Verification Code
+              </label>
+
+              <input
+                id="batch01ResumeOtp"
+                type="text"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                maxLength={6}
+                value={resumeOtp}
+                onChange={(event) =>
+                  setResumeOtp(
+                    event.target.value.replace(/\D/g, '').slice(0, 6),
+                  )
+                }
+                placeholder="000000"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-5 py-4 text-center text-2xl font-bold tracking-[0.5em] text-slate-900 outline-none transition focus:border-[#3A5A78] focus:ring-4 focus:ring-[#3A5A78]/10"
+              />
+            </div>
+
+            <button
+              type="button"
+              onClick={() => void verifyResumeOtp()}
+              disabled={resumeLoading || resumeOtp.length !== 6}
+              className="w-full rounded-xl bg-[#3A5A78] px-6 py-4 font-bold text-white transition hover:bg-[#2d465e] disabled:cursor-not-allowed disabled:bg-slate-300"
+            >
+              {resumeLoading ? 'Verifying...' : 'Verify & Continue to Checkout'}
+            </button>
+
+            <button
+              type="button"
+              disabled={resumeLoading}
+              onClick={() => void requestResumeOtp(resumeEmail)}
+              className="w-full text-center text-sm font-semibold text-[#3A5A78] hover:underline disabled:opacity-50"
+            >
+              Resend Verification Code
+            </button>
+
+            <div className="border-t border-slate-100 pt-5 text-center">
+              <button
+                type="button"
+                onClick={() => {
+                  setResumeEmail('');
+                  setResumeOtp('');
+                }}
+                className="text-sm font-medium text-slate-500 hover:text-[#3A5A78]"
+              >
+                Back to Registration Form
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-[#F5F8FB] text-slate-900">
@@ -224,7 +425,46 @@ export default function Batch01RegistrationPage() {
             </div>
           )}
 
-          <form onSubmit={onSubmit} className="mt-8 space-y-7">
+          <section className="mt-8 rounded-3xl border border-[#3A5A78]/20 bg-white p-6 shadow-sm sm:p-8">
+            <h2 className="text-lg font-bold">
+              Already registered?
+            </h2>
+
+            <p className="mt-2 text-sm leading-7 text-slate-600">
+              Lost your session or switched device? Enter your
+              registered email address and we will send a
+              six-digit code so you can continue where you left off.
+            </p>
+
+            <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+              <input
+                type="email"
+                maxLength={254}
+                autoComplete="email"
+                className={`${inputClass} min-w-0 flex-1`}
+                placeholder="Registered email address"
+                value={resumeInput}
+                onChange={(e) => setResumeInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    void requestResumeOtp(resumeInput);
+                  }
+                }}
+              />
+
+              <button
+                type="button"
+                disabled={resumeLoading}
+                onClick={() => void requestResumeOtp(resumeInput)}
+                className="rounded-xl border-2 border-[#3A5A78] px-6 py-3 font-bold text-[#3A5A78] transition hover:bg-[#F5F8FB] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {resumeLoading ? 'Sending...' : 'Send Code'}
+              </button>
+            </div>
+          </section>
+
+          <form onSubmit={onSubmit} className="mt-7 space-y-7">
             <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
               <h2 className="text-xl font-bold">
                 Personal Information

@@ -46,6 +46,19 @@ export class Batch01DatabaseService
     );
   }
 
+  // Needed for MongoDB transactions (serial ID assignment).
+  getClient(): MongoClient {
+    if (!this.client) {
+      throw new Error(
+        'Batch-01 MongoDB connection is not initialized',
+      );
+    }
+
+    return this.client;
+  }
+
+  
+
   getDb(): Db {
     if (!this.database) {
       throw new Error(

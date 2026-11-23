@@ -219,6 +219,35 @@ export class Batch01AdminService {
     );
   }
 
+  async resendPaymentEmail(id: string) {
+    const participant = await this.findParticipantById(id);
+
+    if (!participant.email) {
+      throw new ConflictException(
+        'Participant email address is missing',
+      );
+    }
+
+    if (
+      participant.status !== 'paid' &&
+      participant.status !== 'confirmed'
+    ) {
+      throw new ConflictException(
+        'Payment receipt is available only for paid participants',
+      );
+    }
+
+    await this.notificationService.sendPaymentReceipt(
+      participant as any,
+      true,
+    );
+
+    return {
+      success: true,
+      message: 'Payment receipt email sent successfully',
+    };
+  }
+
   /**
    * The existing Batch01NotificationService sends the
    * enrollment confirmation email with PDF attachment.

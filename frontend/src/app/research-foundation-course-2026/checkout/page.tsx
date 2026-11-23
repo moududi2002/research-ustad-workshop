@@ -88,6 +88,14 @@ export default function Batch01CheckoutPage() {
 
         if (active) {
           setRegistration(data);
+
+          // Paid users must continue to the confirmation step.
+          if (
+            data.status === 'paid' ||
+            data.status === 'confirmed'
+          ) {
+            router.replace(`${BASE}/confirmation`);
+          }
         }
       } catch (error) {
         if (active) {
@@ -324,7 +332,7 @@ export default function Batch01CheckoutPage() {
             <div className="mt-7 border-t border-slate-100 pt-6">
               <div className="flex justify-between gap-4 text-sm">
                 <span className="text-slate-500">
-                  Registration ID
+                  Temporary Reference ID
                 </span>
                 <strong className="text-right">
                   {registration.registrationId}
@@ -349,6 +357,24 @@ export default function Batch01CheckoutPage() {
                   </span>
                   <strong>{money(registration.originalAmount)}</strong>
                 </div>
+
+                np{registration.pricingType === 'early_bird' &&
+                registration.originalAmount -
+                  registration.amount -
+                  (registration.discountAmount || 0) >
+                  0 ? (
+                  <div className="flex justify-between gap-4 text-sm text-emerald-700">
+                    <span>Early Bird Discount</span>
+                    <strong>
+                      -
+                      {money(
+                        registration.originalAmount -
+                          registration.amount -
+                          (registration.discountAmount || 0),
+                      )}
+                    </strong>
+                  </div>
+                ) : null}
 
                 {registration.discountAmount ? (
                   <div className="flex justify-between gap-4 text-sm text-emerald-700">
@@ -490,7 +516,7 @@ export default function Batch01CheckoutPage() {
                   deductions, payment gateway charges, or course
                   participation-related deductions will follow that
                   published policy. Please review the official policy
-                  before making payment.
+                  before making payment
                 </div>
 
                 <label className="mt-5 flex cursor-pointer items-start gap-3">

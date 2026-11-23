@@ -146,7 +146,11 @@ export default function ResearchFoundationPage() {
                 </Link>
               ) : (
                 <span className="rounded-xl bg-white/15 px-7 py-4 font-bold text-white">
-                  Registration Closed
+                  {settings
+                    ? 'Registration Closed'
+                    : loading
+                      ? 'Loading...'
+                      : 'Please refresh the page'}
                 </span>
               )}
 
