@@ -148,7 +148,7 @@ export default function Batch01RegistrationPage() {
     setResumeLoading(true);
 
     try {
-      const response = await fetch('/api/course/batch-01/resume-request', {
+      const response = await fetch('/api/course/batch-01/resume/request', {
         method: 'POST',
         credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json' },
@@ -189,7 +189,7 @@ export default function Batch01RegistrationPage() {
     setResumeLoading(true);
 
     try {
-      const response = await fetch('/api/course/batch-01/resume-verify', {
+      const response = await fetch('/api/course/batch-01/resume/verify', {
         method: 'POST',
         credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json' },
