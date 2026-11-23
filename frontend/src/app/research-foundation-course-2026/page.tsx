@@ -54,7 +54,7 @@ export default function ResearchFoundationPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/batch-01/settings', {
+    fetch('/api/course/batch-01/settings', {
       cache: 'no-store',
     })
       .then(async (response) => {

@@ -118,7 +118,10 @@ export default function Batch01RegistrationPage() {
   });
 
   useEffect(() => {
-    fetch('/api/batch-01/settings', { cache: 'no-store' })
+    fetch('/api/course/batch-01/settings', 
+      { 
+        cache: 'no-store' 
+      })
       .then((response) => response.json())
       .then(setSettings)
       .catch(() => toast.error('Unable to load course information'));
