@@ -110,7 +110,7 @@ export default function Batch01ConfirmationPage() {
   const [downloading, setDownloading] = useState(false);
 
   const loadStatus = useCallback(async () => {
-    const response = await fetch('/api/batch-01/status', {
+    const response = await fetch('/api/course/batch-01/status', {
       method: 'GET',
       credentials: 'same-origin',
       cache: 'no-store',
@@ -128,7 +128,7 @@ export default function Batch01ConfirmationPage() {
 
     async function load() {
       try {
-        const response = await fetch('/api/batch-01/status', {
+        const response = await fetch('/api/course/batch-01/status', {
           credentials: 'same-origin',
           cache: 'no-store',
         });
@@ -183,7 +183,7 @@ export default function Batch01ConfirmationPage() {
     setWorking(true);
 
     try {
-      const response = await fetch('/api/batch-01/confirm', {
+      const response = await fetch('/api/course/batch-01/confirm', {
         method: 'POST',
         credentials: 'same-origin',
         headers: {
@@ -219,7 +219,7 @@ export default function Batch01ConfirmationPage() {
     setDownloading(true);
 
     try {
-      const response = await fetch('/api/batch-01/receipt', {
+      const response = await fetch('/api/course/batch-01/receipt', {
         method: 'GET',
         credentials: 'same-origin',
         cache: 'no-store',

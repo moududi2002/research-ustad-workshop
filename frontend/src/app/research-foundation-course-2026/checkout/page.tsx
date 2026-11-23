@@ -59,7 +59,7 @@ export default function Batch01CheckoutPage() {
   const [acceptedRefund, setAcceptedRefund] = useState(false);
 
   const loadStatus = useCallback(async () => {
-    const response = await fetch('/api/batch-01/status', {
+    const response = await fetch('/api/course/batch-01/status', {
       method: 'GET',
       credentials: 'same-origin',
       cache: 'no-store',
@@ -79,7 +79,7 @@ export default function Batch01CheckoutPage() {
 
     async function load() {
       try {
-        const response = await fetch('/api/batch-01/status', {
+        const response = await fetch('/api/course/batch-01/status', {
           cache: 'no-store',
           credentials: 'same-origin',
         });
@@ -128,7 +128,7 @@ export default function Batch01CheckoutPage() {
     setWorking(true);
 
     try {
-      const response = await fetch('/api/batch-01/coupon-apply', {
+      const response = await fetch('/api/course/batch-01/coupon-apply', {
         method: 'POST',
         credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json' },
@@ -156,7 +156,7 @@ export default function Batch01CheckoutPage() {
     setWorking(true);
 
     try {
-      const response = await fetch('/api/batch-01/coupon-remove', {
+      const response = await fetch('/api/course/batch-01/coupon-remove', {
         method: 'POST',
         credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json' },
@@ -187,7 +187,7 @@ export default function Batch01CheckoutPage() {
     setWorking(true);
 
     try {
-      const response = await fetch('/api/batch-01/initiate', {
+      const response = await fetch('/api/course/batch-01/initiate', {
         method: 'POST',
         credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json' },
@@ -232,7 +232,7 @@ export default function Batch01CheckoutPage() {
     setWorking(true);
 
     try {
-      const response = await fetch('/api/batch-01/verify', {
+      const response = await fetch('/api/course/batch-01/verify', {
         method: 'POST',
         credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json' },

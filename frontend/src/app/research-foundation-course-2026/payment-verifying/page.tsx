@@ -28,7 +28,7 @@ export default function Batch01PaymentVerifyingPage() {
       attempts += 1;
 
       try {
-        const response = await fetch('/api/batch-01/verify', {
+        const response = await fetch('/api/course/batch-01/verify', {
           method: 'POST',
           credentials: 'same-origin',
           cache: 'no-store',
