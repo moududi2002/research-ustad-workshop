@@ -252,11 +252,13 @@ export default function Batch01RegistrationPage() {
 
       // Existing email: do not create another registration.
       // Verify ownership by sending an OTP.
-      if (response.status === 409) {
-        await requestResumeOtp(form.email);
-        return;
-      }
-
+      if (
+          response.status === 409 &&
+          result.code === 'EMAIL_ALREADY_REGISTERED'
+        ) {
+          await requestResumeOtp(form.email);
+          return;
+        }
       if (!response.ok) {
         const message = Array.isArray(result.message)
           ? result.message.join(', ')

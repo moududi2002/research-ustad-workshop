@@ -128,7 +128,7 @@ export default function Batch01CheckoutPage() {
     setWorking(true);
 
     try {
-      const response = await fetch('/api/course/batch-01/coupon-apply', {
+      const response = await fetch('/api/course/batch-01/coupon/apply', {
         method: 'POST',
         credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json' },
@@ -156,7 +156,7 @@ export default function Batch01CheckoutPage() {
     setWorking(true);
 
     try {
-      const response = await fetch('/api/course/batch-01/coupon-remove', {
+      const response = await fetch('/api/course/batch-01/coupon/remove', {
         method: 'POST',
         credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json' },

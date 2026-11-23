@@ -3,20 +3,24 @@
 import {
   Body,
   Controller,
+  ForbiddenException,
   Get,
   Headers,
   HttpCode,
   HttpStatus,
   Post,
   Query,
+  Req,
   Res,
 } from '@nestjs/common';
 
-import { Response } from 'express';
+import { Request, Response } from 'express';
 
 import { Batch01PaymentService } from '../services/batch-01-payment.service';
 import { Batch01ConfirmationService } from '../services/batch-01-confirmation.service';
 import { verifySharedIpn } from '../../shared-ipn-auth';
+
+const COOKIE_NAME = 'ru_batch01_access';
 
 @Controller('course/batch-01')
 export class Batch01PaymentController {
@@ -25,55 +29,89 @@ export class Batch01PaymentController {
     private readonly confirmationService: Batch01ConfirmationService,
   ) {}
 
+  private resolveToken(
+    req: Request,
+    headerToken?: string,
+  ): string | undefined {
+    if (headerToken?.trim()) {
+      return headerToken.trim();
+    }
+
+    // Protect cookie-authenticated requests from
+    // unexpected browser origins.
+    const origin = req.headers.origin;
+
+    if (
+      origin &&
+      origin !== 'https://workshop.researchustad.org' &&
+      origin !== 'http://localhost:3000'
+    ) {
+      throw new ForbiddenException('Invalid request origin');
+    }
+
+    const cookieToken = req.cookies?.[COOKIE_NAME];
+
+    return typeof cookieToken === 'string'
+      ? cookieToken
+      : undefined;
+  }
+
+  // Start PayStation payment
   @Post('initiate')
   @HttpCode(HttpStatus.OK)
   async initiate(
-    @Headers('x-course-access') token: string,
-    @Body()
-    body: {
+    @Req() req: Request,
+    @Headers('x-course-access') headerToken: string,
+    @Body() body: {
       termsAccepted: boolean;
       refundPolicyAccepted: boolean;
     },
   ) {
     return this.paymentService.initiate(
-      token,
+      this.resolveToken(req, headerToken),
       body?.termsAccepted,
       body?.refundPolicyAccepted,
     );
   }
 
+  // Verify payment
   @Post('verify')
   @HttpCode(HttpStatus.OK)
   async verify(
-    @Headers('x-course-access') token: string,
+    @Req() req: Request,
+    @Headers('x-course-access') headerToken: string,
   ) {
-    return this.paymentService.verify(token);
+    return this.paymentService.verify(
+      this.resolveToken(req, headerToken),
+    );
   }
 
-  // Participant confirms after PayStation payment verification.
+  // Participant confirms after successful payment
   @Post('confirm')
   @HttpCode(HttpStatus.OK)
   async confirm(
-    @Headers('x-course-access') token: string,
+    @Req() req: Request,
+    @Headers('x-course-access') headerToken: string,
     @Body() body: {
       termsAccepted: boolean;
     },
   ) {
     return this.confirmationService.confirmByAccessToken(
-      token,
+      this.resolveToken(req, headerToken),
       body?.termsAccepted,
     );
   }
 
-  // Participant downloads their own confirmed payment receipt.
+  // Download participant receipt
   @Get('receipt')
   async downloadReceipt(
-    @Headers('x-course-access') token: string,
+    @Req() req: Request,
+    @Headers('x-course-access') headerToken: string,
     @Res() res: Response,
   ) {
     const { buffer, filename } =
       await this.confirmationService.generateParticipantReceipt(
-        token,
+        this.resolveToken(req, headerToken),
       );
 
     res.setHeader('Content-Type', 'application/pdf');
@@ -86,7 +124,7 @@ export class Batch01PaymentController {
     return res.send(buffer);
   }
 
-  // Internal IPN receiver.
+  // Internal PayStation IPN — unchanged
   @Post('ipn')
   @HttpCode(HttpStatus.OK)
   async ipn(
@@ -99,7 +137,7 @@ export class Batch01PaymentController {
     return this.paymentService.handleIpn(body);
   }
 
-  // PayStation browser callback.
+  // PayStation browser callback — unchanged
   @Get('callback')
   async callbackGet(
     @Res() res: Response,
