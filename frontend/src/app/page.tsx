@@ -26,7 +26,7 @@ const programs = [
     title: 'Research to Higher Study',
     subtitle: 'Building a Strong Research Profile',
     description:
-      'Explore the fundamentals of research, academic profile development, and international higher-study opportunities.',
+      'Explore the fundamentals of research, academic profile development and international higher-study opportunities.',
     icon: HiOutlineCalendarDays,
     href: '/workshop-01',
     featured: false,
@@ -40,7 +40,7 @@ const programs = [
     title: 'Upcoming Research Workshop',
     subtitle: 'More learning opportunities ahead',
     description:
-      'A new workshop will be announced with its own topic, schedule, and registration information.',
+      'A new workshop will be announced with its own topic, schedule and registration information.',
     icon: HiOutlineCalendarDays,
     href: '',
     featured: false,
@@ -55,7 +55,7 @@ const programs = [
     title: 'Research Foundation Course-2026',
     subtitle: 'Build Your Research Foundation',
     description:
-      'A beginner-friendly research training program covering research fundamentals, methodology, academic writing, publication awareness, and higher-study preparation.',
+      'A beginner-friendly research training program covering research fundamentals, methodology, academic writing, publication awareness and higher-study preparation.',
     icon: HiOutlineAcademicCap,
     href: '/research-foundation-course-2026',
     featured: true,
@@ -69,7 +69,7 @@ const programs = [
     title: 'Research Article Writing & Academic Publishing Guidelines',
     subtitle: 'From Research Fundamentals to Journal Submission',
     description:
-      'A comprehensive, beginner-friendly live training program with guided practice, scholarly writing, peer review, and publication strategy.',
+      'A comprehensive, beginner-friendly live training program with guided practice, scholarly writing, peer review and publication strategy.',
     icon: HiOutlineBookOpen,
     href: COURSE_SLUG,
     featured: true,
@@ -146,7 +146,7 @@ export default function Home() {
             <p className="mx-auto mt-7 max-w-2xl text-base leading-8 text-slate-300 sm:text-lg">
               Discover professionally structured workshops and live
               courses designed to develop research confidence, academic
-              writing skills, and responsible publication practices.
+              writing skills and responsible publication practices.
             </p>
 
             <a

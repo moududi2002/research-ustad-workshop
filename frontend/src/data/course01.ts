@@ -22,9 +22,9 @@ export const COURSE_INFO = {
   price: 3000,
   currency: 'BDT',
   approach:
-    'Interactive lectures, live demonstrations, guided practice, assignments, and instructor feedback',
+    'Interactive lectures, live demonstrations, guided practice, assignments and instructor feedback',
   goal:
-    'Develop the knowledge, research judgement, and practical skills needed to plan, write, improve, and prepare an original scholarly manuscript for submission.',
+    'Develop the knowledge, research judgement and practical skills needed to plan, write, improve and prepare an original scholarly manuscript for submission.',
 };
 
 export interface ClassContent {
@@ -52,7 +52,7 @@ export const COURSE_MODULES: CourseModule[] = [
         title: 'Developing a Research-Oriented Mindset',
         topics: [
           'The value and purpose of academic research',
-          'Research mindset, critical thinking, and intellectual curiosity',
+          'Research mindset, critical thinking and intellectual curiosity',
           'The role of research in higher education and academic careers',
           'Designing a realistic learning roadmap for beginning researchers',
         ],
@@ -61,9 +61,9 @@ export const COURSE_MODULES: CourseModule[] = [
         number: 2,
         title: 'Understanding the Research Ecosystem',
         topics: [
-          'Academic research, scholarly journals, conferences, and proceedings',
-          'Differences among research articles, review papers, theses, and technical reports',
-          'Peer review, editorial decisions, and the publication workflow',
+          'Academic research, scholarly journals, conferences and proceedings',
+          'Differences among research articles, review papers, theses and technical reports',
+          'Peer review, editorial decisions and the publication workflow',
           'Multidisciplinary and interdisciplinary research approaches',
         ],
       },
@@ -73,8 +73,8 @@ export const COURSE_MODULES: CourseModule[] = [
         topics: [
           'Recognizing research gaps and unresolved knowledge gaps',
           'Transforming broad interests into focused research problems',
-          'Developing objectives, research questions, and hypotheses',
-          'Evaluating novelty, significance, feasibility, and scope',
+          'Developing objectives, research questions and hypotheses',
+          'Evaluating novelty, significance, feasibility and scope',
         ],
       },
     ],
@@ -90,8 +90,8 @@ export const COURSE_MODULES: CourseModule[] = [
         number: 4,
         title: 'Smart Literature Search and Academic Database Navigation',
         topics: [
-          'Navigating Google Scholar, PubMed, IEEE Xplore, Scopus, and Web of Science',
-          'Keyword development, Boolean operators, and advanced search techniques',
+          'Navigating Google Scholar, PubMed, IEEE Xplore, Scopus and Web of Science',
+          'Keyword development, Boolean operators and advanced search techniques',
           'Discovering open-access articles and obtaining full texts legally',
           'Designing reproducible search strategies and literature tracking systems',
         ],
@@ -101,8 +101,8 @@ export const COURSE_MODULES: CourseModule[] = [
         title: 'Critical Reading and Evidence-Based Literature Review',
         topics: [
           'Efficient approaches to reading and understanding research papers',
-          'Analyzing abstracts, methodologies, results, and discussions',
-          'Distinguishing key findings, limitations, and future research directions',
+          'Analyzing abstracts, methodologies, results and discussions',
+          'Distinguishing key findings, limitations and future research directions',
           'Synthesizing evidence across multiple studies rather than simply summarizing papers',
         ],
       },
@@ -110,15 +110,15 @@ export const COURSE_MODULES: CourseModule[] = [
         number: 6,
         title: 'Systematic Literature Mapping and Review Design',
         topics: [
-          'Understanding narrative, systematic, scoping, and bibliometric reviews',
+          'Understanding narrative, systematic, scoping and bibliometric reviews',
           'Defining inclusion and exclusion criteria',
           'Introducing the PRISMA framework and transparent review reporting',
-          'Developing literature matrices, evidence tables, and research gap maps',
+          'Developing literature matrices, evidence tables and research gap maps',
         ],
       },
     ],
     practical:
-      'Analyze at least ten relevant scholarly papers, develop a literature matrix, and write an initial research gap statement.',
+      'Analyze at least ten relevant scholarly papers, develop a literature matrix and write an initial research gap statement.',
   },
   {
     id: 3,
@@ -132,7 +132,7 @@ export const COURSE_MODULES: CourseModule[] = [
           'Introduction to Zotero and Mendeley',
           'Creating and organizing a digital reference library',
           'Inserting citations into Microsoft Word or compatible academic editors',
-          'Understanding APA, IEEE, Vancouver, and other citation styles',
+          'Understanding APA, IEEE, Vancouver and other citation styles',
         ],
       },
       {
@@ -140,9 +140,9 @@ export const COURSE_MODULES: CourseModule[] = [
         title: 'Academic Note-Taking and Research Knowledge Management',
         topics: [
           'Preparing structured literature review notes and research logs',
-          'Verifying citation metadata, publication details, and DOIs',
+          'Verifying citation metadata, publication details and DOIs',
           'Developing research paper comparison matrices',
-          'Organizing datasets, documents, figures, and project references',
+          'Organizing datasets, documents, figures and project references',
         ],
       },
       {
@@ -151,8 +151,8 @@ export const COURSE_MODULES: CourseModule[] = [
         topics: [
           'Evaluating the credibility of academic journals and conferences',
           'Distinguishing peer-reviewed literature from non-peer-reviewed material',
-          'Checking publisher pages, DOI records, and indexing information',
-          'Recognizing predatory publications, misleading metrics, and fabricated references',
+          'Checking publisher pages, DOI records and indexing information',
+          'Recognizing predatory publications, misleading metrics and fabricated references',
         ],
       },
     ],
@@ -168,8 +168,8 @@ export const COURSE_MODULES: CourseModule[] = [
         number: 10,
         title: 'Choosing the Right Research Methodology',
         topics: [
-          'Quantitative, qualitative, and mixed-methods approaches',
-          'Experimental, observational, and survey-based study designs',
+          'Quantitative, qualitative and mixed-methods approaches',
+          'Experimental, observational and survey-based study designs',
           'Selecting an appropriate research design',
           'Aligning research methods with objectives and research questions',
         ],
@@ -178,9 +178,9 @@ export const COURSE_MODULES: CourseModule[] = [
         number: 11,
         title: 'Sampling, Measurement and Data Collection',
         topics: [
-          'Defining populations, samples, and sampling strategies',
+          'Defining populations, samples and sampling strategies',
           'Developing questionnaires and selecting measurement scales',
-          'Understanding validity, reliability, and pilot testing',
+          'Understanding validity, reliability and pilot testing',
           'Designing data collection protocols and identifying potential bias',
         ],
       },
@@ -207,10 +207,10 @@ export const COURSE_MODULES: CourseModule[] = [
         number: 13,
         title: 'Structuring a Research Article from Start to Finish',
         topics: [
-          'Understanding the IMRaD structure: Introduction, Methods, Results, and Discussion',
-          'Developing a clear title, abstract, and keywords',
+          'Understanding the IMRaD structure: Introduction, Methods, Results and Discussion',
+          'Developing a clear title, abstract and keywords',
           'Adapting manuscripts to journal-specific structures and requirements',
-          'Creating logical flow, coherence, and organization throughout a paper',
+          'Creating logical flow, coherence and organization throughout a paper',
         ],
       },
       {
@@ -220,7 +220,7 @@ export const COURSE_MODULES: CourseModule[] = [
           'Moving logically from research background to research gap',
           'Writing persuasive problem statements and research objectives',
           'Synthesizing previous studies into a critical academic argument',
-          'Communicating original contributions, significance, and novelty',
+          'Communicating original contributions, significance and novelty',
         ],
       },
       {
@@ -228,9 +228,9 @@ export const COURSE_MODULES: CourseModule[] = [
         title: 'Writing Methods, Results, Discussion and Conclusion',
         topics: [
           'Describing transparent and reproducible research methodologies',
-          'Presenting results through effective tables, figures, and explanations',
+          'Presenting results through effective tables, figures and explanations',
           'Interpreting findings in relation to previous scholarly work',
-          'Writing limitations, implications, conclusions, and future research directions',
+          'Writing limitations, implications, conclusions and future research directions',
         ],
       },
     ],
@@ -240,15 +240,15 @@ export const COURSE_MODULES: CourseModule[] = [
   {
     id: 6,
     title: 'Academic Presentation, Technical Writing & Quality Improvement',
-    subtitle: 'Improving Clarity, Visual Communication, and Academic Quality',
+    subtitle: 'Improving Clarity, Visual Communication and Academic Quality',
     classes: [
       {
         number: 16,
         title: 'Scientific Tables, Figures and Research Visualization',
         topics: [
           'Fundamentals of research data visualization',
-          'Developing publication-quality charts, tables, and figures',
-          'Writing informative captions, legends, and appropriate units',
+          'Developing publication-quality charts, tables and figures',
+          'Writing informative captions, legends and appropriate units',
           'Maintaining data integrity and avoiding misleading visual presentations',
         ],
       },
@@ -257,8 +257,8 @@ export const COURSE_MODULES: CourseModule[] = [
         title: 'Academic English, Clarity and Technical Editing',
         topics: [
           'Using precise language and an appropriate academic tone',
-          'Improving paragraph structure, cohesion, and logical transitions',
-          'Editing grammar, clarity, concision, and sentence construction',
+          'Improving paragraph structure, cohesion and logical transitions',
+          'Editing grammar, clarity, concision and sentence construction',
           'Applying discipline-specific academic writing conventions',
         ],
       },
@@ -268,7 +268,7 @@ export const COURSE_MODULES: CourseModule[] = [
         topics: [
           'Understanding review article structures and evidence synthesis',
           'Comparing conference papers with full-length journal articles',
-          'Recognizing differences among technical reports, thesis chapters, and journal manuscripts',
+          'Recognizing differences among technical reports, thesis chapters and journal manuscripts',
           'Choosing the appropriate structure for different scholarly writing formats',
         ],
       },
@@ -285,9 +285,9 @@ export const COURSE_MODULES: CourseModule[] = [
         number: 19,
         title: 'Research Integrity, Plagiarism and Publication Ethics',
         topics: [
-          'Understanding plagiarism, self-plagiarism, and duplicate publication',
-          'Identifying fabrication, falsification, and authorship misconduct',
-          'Recognizing informed consent, confidentiality, and ethical approval requirements',
+          'Understanding plagiarism, self-plagiarism and duplicate publication',
+          'Identifying fabrication, falsification and authorship misconduct',
+          'Recognizing informed consent, confidentiality and ethical approval requirements',
           'Maintaining citation integrity and responsible data handling',
         ],
       },
@@ -295,9 +295,9 @@ export const COURSE_MODULES: CourseModule[] = [
         number: 20,
         title: 'Using AI Tools Responsibly in Academic Research',
         topics: [
-          'Appropriate uses of AI-assisted discovery, research support, and academic writing tools',
-          'Verifying AI-generated references, interpretations, and factual claims',
-          'Managing hallucinations, bias, privacy risks, and data confidentiality',
+          'Appropriate uses of AI-assisted discovery, research support and academic writing tools',
+          'Verifying AI-generated references, interpretations and factual claims',
+          'Managing hallucinations, bias, privacy risks and data confidentiality',
           'Following journal-specific AI disclosure policies and maintaining human accountability',
         ],
       },
@@ -305,10 +305,10 @@ export const COURSE_MODULES: CourseModule[] = [
         number: 21,
         title: 'Research Ethics, Authorship and Shariah-Informed Scholarship',
         topics: [
-          'Fair authorship, acknowledgement practices, and contributor responsibilities',
-          'Preventing research fraud, misleading claims, and predatory publishing',
-          'Examining honesty, trustworthiness, fair attribution, and accountability through a Shariah-informed ethical perspective',
-          'Protecting research participants, sensitive information, and communities from avoidable harm',
+          'Fair authorship, acknowledgement practices and contributor responsibilities',
+          'Preventing research fraud, misleading claims and predatory publishing',
+          'Examining honesty, trustworthiness, fair attribution and accountability through a Shariah-informed ethical perspective',
+          'Protecting research participants, sensitive information and communities from avoidable harm',
         ],
       },
     ],
@@ -324,9 +324,9 @@ export const COURSE_MODULES: CourseModule[] = [
         number: 22,
         title: 'Selecting the Right Journal and Understanding Publishing Models',
         topics: [
-          'Evaluating journal aims, scope, audience, and manuscript fit',
-          'Checking journal indexing, publisher credibility, and editorial boards',
-          'Understanding open-access, subscription, and publication fee models',
+          'Evaluating journal aims, scope, audience and manuscript fit',
+          'Checking journal indexing, publisher credibility and editorial boards',
+          'Understanding open-access, subscription and publication fee models',
           'Interpreting journal metrics appropriately and avoiding predatory outlets',
         ],
       },
@@ -337,7 +337,7 @@ export const COURSE_MODULES: CourseModule[] = [
           'Preparing submission files according to author guidelines',
           'Writing cover letters and completing manuscript metadata',
           'Responding constructively to reviewer comments point by point',
-          'Planning revisions, resubmissions, and appropriate appeals',
+          'Planning revisions, resubmissions and appropriate appeals',
         ],
       },
       {
@@ -358,11 +358,11 @@ export const COURSE_MODULES: CourseModule[] = [
 
 export const COURSE_OUTCOMES = [
   'Identify meaningful research problems and develop focused research questions.',
-  'Search, critically evaluate, and synthesize scholarly literature.',
+  'Search, critically evaluate and synthesize scholarly literature.',
   'Use academic databases and reference management tools effectively.',
   'Design an appropriate research methodology and data collection plan.',
   'Prepare a structured research manuscript using recognized academic writing conventions.',
-  'Develop clear research tables, figures, and presentations.',
+  'Develop clear research tables, figures and presentations.',
   'Apply responsible research practices and disclose AI assistance appropriately.',
   'Evaluate suitable journals and prepare for peer review and submission.',
 ];

@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   },
 
   description:
-    'Research Ustad is a research and academic learning platform offering research courses, workshops, research training, academic mentorship, and practical learning opportunities for students and researchers worldwide.',
+    'Research Ustad is a research and academic learning platform offering research courses, workshops, research training, academic mentorship and practical learning opportunities for students and researchers worldwide.',
 
   applicationName: 'Research Ustad',
 
@@ -60,7 +60,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Research Ustad | Research, Courses, Workshops & Academic Mentorship',
     description:
-      'Explore research courses, professional workshops, academic classes, research training, and mentorship opportunities with Research Ustad.',
+      'Explore research courses, professional workshops, academic classes, research training and mentorship opportunities with Research Ustad.',
     url: siteUrl,
     siteName: 'Research Ustad',
     locale: 'en_US',
@@ -71,7 +71,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Research Ustad | Research & Academic Learning Platform',
     description:
-      'Discover research courses, workshops, academic classes, and research mentorship opportunities with Research Ustad.',
+      'Discover research courses, workshops, academic classes and research mentorship opportunities with Research Ustad.',
   },
 
   robots: {
@@ -98,7 +98,7 @@ const organizationJsonLd = {
   url: siteUrl,
 
   description:
-    'Research Ustad is a research and academic learning platform providing research courses, workshops, training, and academic mentorship.',
+    'Research Ustad is a research and academic learning platform providing research courses, workshops, training and academic mentorship.',
 
   founder: {
     '@type': 'Person',

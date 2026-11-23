@@ -249,15 +249,15 @@ export default function ResearchFoundationPage() {
           {[
             {
               title: 'Research Fundamentals',
-              description: 'Understand research concepts, research questions, and the academic research process.',
+              description: 'Understand research concepts, research questions and the academic research process.',
             },
             {
               title: 'Research Methodology',
-              description: 'Learn about research design, data collection, and methodological choices.',
+              description: 'Learn about research design, data collection and methodological choices.',
             },
             {
               title: 'Literature Review',
-              description: 'Explore scholarly databases, literature searching, and critical reading.',
+              description: 'Explore scholarly databases, literature searching and critical reading.',
             },
             {
               title: 'Academic Writing',
@@ -265,7 +265,7 @@ export default function ResearchFoundationPage() {
             },
             {
               title: 'Publication Awareness',
-              description: 'Learn about journals, conferences, peer review, and publication ethics.',
+              description: 'Learn about journals, conferences, peer review and publication ethics.',
             },
             {
               title: 'Higher Study Preparation',

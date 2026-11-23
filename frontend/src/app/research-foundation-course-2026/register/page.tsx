@@ -418,7 +418,7 @@ export default function Batch01RegistrationPage() {
 
           <p className="mt-4 leading-7 text-slate-600">
             Complete your personal and academic information.
-            Your registration will be saved securely, and you
+            Your registration will be saved securely and you
             can review the payable fee before proceeding.
           </p>
 

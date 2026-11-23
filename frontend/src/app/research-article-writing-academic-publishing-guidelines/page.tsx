@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: 'Research Article Writing & Academic Publishing Guidelines',
 
   description:
-    'Join Research Ustad’s Workshop on Research Article Writing & Academic Publishing Guidelines. Learn research article preparation, academic writing, publication strategies, journal selection, and scholarly publishing practices.',
+    'Join Research Ustad’s Workshop on Research Article Writing & Academic Publishing Guidelines. Learn research article preparation, academic writing, publication strategies, journal selection and scholarly publishing practices.',
 
   keywords: [
     'Research Ustad',
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     title:
       'Research Article Writing & Academic Publishing Guidelines | Research Ustad',
     description:
-      'Learn research article writing, academic publishing strategies, journal selection, and scholarly publication practices with Research Ustad.',
+      'Learn research article writing, academic publishing strategies, journal selection and scholarly publication practices with Research Ustad.',
     url: 'https://workshop.researchustad.org/research-article-writing-academic-publishing-guidelines',
     siteName: 'Research Ustad',
     type: 'website',
@@ -161,7 +161,7 @@ export default function CourseDetailsPage() {
               A structured and practical learning journey designed to
               help aspiring researchers understand the research
               process, critically evaluate scholarly literature,
-              develop original manuscripts, and navigate the
+              develop original manuscripts and navigate the
               academic publication process responsibly.
             </p>
 
@@ -289,7 +289,7 @@ export default function CourseDetailsPage() {
             This course combines conceptual understanding with guided
             exercises and applied academic writing. Participants
             progressively develop research ideas, literature matrices,
-            methodological plans, manuscript drafts, and publication
+            methodological plans, manuscript drafts and publication
             readiness skills.
           </p>
         </div>

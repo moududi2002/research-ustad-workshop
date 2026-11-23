@@ -34,7 +34,7 @@ export class CertificatePdfService implements OnModuleDestroy {
   }
 
   private async asset(name: string): Promise<string> {
-    // Run backend from its directory, and copy images from frontend/public/images.
+    // Run backend from its directory and copy images from frontend/public/images.
     const assetPath = join(process.cwd(), 'assets', 'certificate', name);
     try {
       const buffer = await fs.readFile(assetPath);

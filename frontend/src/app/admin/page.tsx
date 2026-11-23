@@ -557,7 +557,7 @@ function AdminDashboard() {
                 <CommCard
                     title="Certificate Management"
                     description="Issue PDF certificates to attended participants,
-                    send certificates by email, and manage verification."
+                    send certificates by email and manage verification."
                     buttonLabel="Manage Certificates"
                     icon={<FiMail className="h-5 w-5" />}
                     onClick={() => router.push('/admin/certificates')}
