@@ -156,6 +156,7 @@ export class Batch01RegistrationService
   ) {}
 
   async onModuleInit(): Promise<void> {
+    await this.databaseService.ready();
     const database = this.databaseService.getDb();
 
     this.registrations =

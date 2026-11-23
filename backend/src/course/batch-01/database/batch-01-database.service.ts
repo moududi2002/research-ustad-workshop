@@ -18,7 +18,24 @@ export class Batch01DatabaseService
   private client!: MongoClient;
   private database!: Db;
 
+    private connecting?: Promise<void>;
+
+  // Other Batch-01 services call this first, because Nest runs
+  // onModuleInit hooks of one module in parallel (no fixed order).
+  // Safe to call many times: it connects only once.
+  ready(): Promise<void> {
+    if (!this.connecting) {
+      this.connecting = this.connect();
+    }
+
+    return this.connecting;
+  }
+
   async onModuleInit(): Promise<void> {
+    await this.ready();
+  }
+
+  private async connect(): Promise<void> {
     const uri = process.env.COURSE_MONGODB_URI;
 
     if (!uri) {

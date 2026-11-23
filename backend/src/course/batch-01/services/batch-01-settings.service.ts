@@ -38,7 +38,8 @@ export class Batch01SettingsService
   ) {}
 
   async onModuleInit(): Promise<void> {
-  const database = this.databaseService.getDb();
+    await this.databaseService.ready(); 
+    const database = this.databaseService.getDb();
 
   this.settingsCollection =
     database.collection<Batch01Settings>(

@@ -81,6 +81,7 @@ export class Batch01CouponService
   ) {}
 
   async onModuleInit(): Promise<void> {
+    await this.databaseService.ready(); 
     const database = this.databaseService.getDb();
 
     this.coupons =
