@@ -1,9 +1,7 @@
 
-// backend/src/course/batch-01/controllers/batch-01-registration.controller.ts
 import {
   Body,
   Controller,
-  ForbiddenException,
   Get,
   Headers,
   HttpCode,
@@ -11,22 +9,25 @@ import {
   Post,
   Req,
   Res,
+  ForbiddenException,
 } from '@nestjs/common';
 
 import { Request, Response } from 'express';
 
 import { Batch01RegistrationDto } from '../dto/batch-01-registration.dto';
+
 import { Batch01RegistrationService } from '../services/batch-01-registration.service';
 
-const COOKIE_NAME = 'ru_batch01_access';
+const BATCH01_COOKIE = 'ru_batch01_access';
 
 @Controller('course/batch-01')
 export class Batch01RegistrationController {
   constructor(
-    private readonly registrationService: Batch01RegistrationService,
+    private readonly registrationService:
+      Batch01RegistrationService,
   ) {}
 
-  private checkOrigin(req: Request) {
+  private checkOrigin(req: Request): void {
     const origin = req.headers.origin;
 
     if (
@@ -38,8 +39,11 @@ export class Batch01RegistrationController {
     }
   }
 
-  private saveSession(res: Response, accessToken: string) {
-    res.cookie(COOKIE_NAME, accessToken, {
+  private saveSession(
+    res: Response,
+    accessToken: string,
+  ): void {
+    res.cookie(BATCH01_COOKIE, accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
@@ -48,22 +52,6 @@ export class Batch01RegistrationController {
     });
   }
 
-  private resolveToken(
-    req: Request,
-    headerToken?: string,
-  ): string | undefined {
-    if (headerToken?.trim()) {
-      return headerToken.trim();
-    }
-
-    const cookieToken = req.cookies?.[COOKIE_NAME];
-
-    return typeof cookieToken === 'string'
-      ? cookieToken
-      : undefined;
-  }
-
-  // New registration
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   async register(
@@ -73,38 +61,35 @@ export class Batch01RegistrationController {
   ) {
     this.checkOrigin(req);
 
-    const result = await this.registrationService.register(dto, {
-      userAgent: String(
-        req.headers['user-agent'] || '',
-      ).slice(0, 512),
+    const result = await this.registrationService.register(
+      dto,
+      {
+        userAgent: String(
+          req.headers['user-agent'] || '',
+        ).slice(0, 512),
 
-      network: String(
-        req.headers['x-real-ip'] || '',
-      ).slice(0, 64),
-    });
+        network: String(
+          req.headers['x-real-ip'] || '',
+        ).slice(0, 64),
+      },
+    );
 
-    // Backend creates the access token.
-    // Store it in a Batch-01-only HttpOnly cookie.
+    // Persist session in browser cookie.
     this.saveSession(res, result.accessToken);
 
-    // Do not expose the token in the JSON response.
+    // Never return the secret token in browser JSON.
     const { accessToken, ...safeResult } = result;
 
     return safeResult;
   }
 
-  // Existing registration status
   @Get('status')
   async status(
-    @Req() req: Request,
-    @Headers('x-course-access') headerToken?: string,
+    @Headers('x-course-access') accessToken: string,
   ) {
-    return this.registrationService.getStatus(
-      this.resolveToken(req, headerToken),
-    );
+    return this.registrationService.getStatus(accessToken);
   }
 
-  // Request registration resume OTP
   @Post('resume/request')
   @HttpCode(HttpStatus.OK)
   async requestResume(
@@ -116,11 +101,11 @@ export class Batch01RegistrationController {
     return this.registrationService.requestResume(email);
   }
 
-  // Verify OTP and restore session
   @Post('resume/verify')
   @HttpCode(HttpStatus.OK)
   async verifyResume(
-    @Body() body: {
+    @Body()
+    body: {
       email: string;
       code: string;
     },
@@ -135,7 +120,7 @@ export class Batch01RegistrationController {
         body?.code,
       );
 
-    // Replace old session with the new token.
+    // Replace the previous session after OTP verification.
     this.saveSession(res, result.accessToken);
 
     const { accessToken, ...safeResult } = result;
