@@ -136,31 +136,31 @@ export default function ResearchFoundationPage() {
               ))}
             </div>
 
-            <div className="mt-10 flex flex-wrap gap-4">
-              {isOpen ? (
-                <Link
-                  href={`${BASE}/register`}
-                  className="rounded-xl bg-[#C99589] px-7 py-4 font-bold text-[#263D55] transition hover:bg-[#ddb2a7]"
-                >
-                  Register for Batch-01
-                </Link>
-              ) : (
-                <span className="rounded-xl bg-white/15 px-7 py-4 font-bold text-white">
-                  {settings
-                    ? 'Registration Closed'
-                    : loading
-                      ? 'Loading...'
-                      : 'Please refresh the page'}
-                </span>
-              )}
-
-              <a
-                href={`${BASE}/course-module`}
-                className="rounded-xl border border-white/30 px-7 py-4 font-semibold"
+         <div className="hero-btns mt-10 flex flex-wrap gap-4">
+            {isOpen ? (
+              <Link
+                href={`${BASE}/register`}
+                className="hero-btn hero-btn-solid"
               >
-                Explore Course
-              </a>
-            </div>
+                Register for Batch-01
+              </Link>
+            ) : (
+              <span className="rounded-xl bg-white/15 px-7 py-4 font-bold text-white">
+                {settings
+                  ? 'Registration Closed'
+                  : loading
+                    ? 'Loading...'
+                    : 'Please refresh the page'}
+              </span>
+            )}
+
+            <a
+              href="#course-details"
+              className="hero-btn hero-btn-plain"
+            >
+              Explore Course
+            </a>
+          </div>
           </div>
 
           <div className="rounded-3xl border border-white/15 bg-white/10 p-7 shadow-2xl backdrop-blur">

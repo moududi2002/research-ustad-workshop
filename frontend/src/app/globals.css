@@ -57,6 +57,34 @@ body {
     @apply mb-1.5 block text-sm font-medium text-ink-800;
   }
 
+
+  .hero-btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border-2 px-7 py-4 font-bold transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#263D55];
+  }
+
+  .hero-btn-solid {
+    @apply border-[#C99589] bg-[#C99589] text-[#263D55];
+  }
+
+  .hero-btn-plain {
+    @apply border-white/40 bg-transparent text-white;
+  }
+
+  .hero-btn-solid:hover,
+  .hero-btn-solid:focus-visible {
+    @apply border-[#ddb2a7] bg-[#ddb2a7];
+  }
+
+  .hero-btn-plain:hover,
+  .hero-btn-plain:focus-visible {
+    @apply border-[#C99589] bg-[#C99589] text-[#263D55];
+  }
+
+  .hero-btns:has(.hero-btn-plain:hover) .hero-btn-solid,
+  .hero-btns:has(.hero-btn-plain:focus-visible) .hero-btn-solid {
+    @apply border-white/40 bg-transparent text-white;
+  }
+
   .error-text {
     @apply mt-1 text-xs font-medium text-red-600;
   }
@@ -69,4 +97,18 @@ body {
 
 .animate-float {
   animation: float 6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

@@ -5,8 +5,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { FiAward, FiArrowRight, FiCheck } from 'react-icons/fi';
 import Footer from '@/components/Footer';
-import Reveal from '@/components/foundation-batch01/course-module/Reveal';
-import SessionAccordion from '@/components/foundation-batch01/course-module/SessionAccordion';
+import Reveal from '@/components/course-module/Reveal';
+import SessionAccordion from '@/components/course-module/SessionAccordion';
 import {
   COURSE,
   COURSE_AWARDS,
@@ -103,18 +103,16 @@ export default function CourseModulePage() {
             </Reveal>
 
             <Reveal delay={300}>
-              <div className="mt-10 flex flex-wrap gap-4">
+              <div className="hero-btns mt-10 flex flex-wrap gap-4">
                 <Link
                   href={`${COURSE_BASE_PATH}/register`}
-                  className="inline-flex items-center gap-2 rounded-xl bg-[#C99589] px-7 py-4 font-bold text-[#263D55] transition-colors hover:bg-[#ddb2a7]"
+                  className="hero-btn hero-btn-solid"
                 >
                   Register for {COURSE.batch}
                   <FiArrowRight className="h-4 w-4" aria-hidden="true" />
                 </Link>
-                <a
-                  href="#schedule"
-                  className="rounded-xl border border-white/30 px-7 py-4 font-semibold transition-colors hover:border-white hover:bg-white/10"
-                >
+
+                <a href="#schedule" className="hero-btn hero-btn-plain">
                   View Schedule
                 </a>
               </div>
