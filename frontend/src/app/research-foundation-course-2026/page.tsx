@@ -155,7 +155,7 @@ export default function ResearchFoundationPage() {
             )}
 
             <a
-              href="#course-details"
+              href={`${BASE}/course-module`}
               className="hero-btn hero-btn-plain"
             >
               Explore Course
