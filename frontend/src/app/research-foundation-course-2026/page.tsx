@@ -155,7 +155,7 @@ export default function ResearchFoundationPage() {
               )}
 
               <a
-                href="#course-details"
+                href="https://researchustad.com/research-foundation-course-2026/course-module"
                 className="rounded-xl border border-white/30 px-7 py-4 font-semibold"
               >
                 Explore Course
